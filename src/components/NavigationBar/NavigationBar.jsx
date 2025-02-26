@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "./NavigationBar.css"; // Import custom styles
+import "./NavigationBar.css"; 
 
 function NavigationBar() {
-  const [activeLink, setActiveLink] = useState("Home"); // Default active link
+  const [activeLink, setActiveLink] = useState("Home"); 
 
   return (
     <header className="custom-navbar d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">

@@ -1,0 +1,55 @@
+.custom-footer{
+    background-color: #222222;
+width: 100%;
+border-top: 1px solid #2D8CFF;
+}
+.footer-bottom {
+    background-color: #2D8CFF;
+    border-top: 1px solid #2D8CFF; 
+}
+.bi{
+    transition: color 0.3s ease-in-out;
+}
+.bi:hover{
+    color: #2D8CFF !important; /
+}
+.custom-outline-btn {
+    color: white;
+    border: 2px solid #2D8CFF; 
+    background-color: transparent; 
+    transition: all 0.3s ease-in-out;
+  }
+  .login-button{
+    background-color: #2D8CFF;
+    color: white;
+    }
+  .custom-outline-btn:hover {
+    background-color: #504D4D; 
+    color: white; 
+  }
+  .custom-input {
+    background: transparent !important;  
+    border: 1px solid white !important; 
+    color: white !important;         
+  }
+  
+  .custom-input::placeholder {
+    color: rgba(255, 255, 255, 0.7);    
+  }
+  
+  .custom-input:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    border-color: white !important;
+  }
+.login-button:hover{
+    background-color: #504D4D;
+}
+.nav-link {
+    transition: color 0.3s ease-in-out;
+  }
+  
+  .nav-link:hover {
+    color: #2D8CFF !important; /* Replace with your custom color */
+  }
+  
