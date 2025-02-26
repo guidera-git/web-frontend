@@ -1,0 +1,27 @@
+.custom-navbar{
+    background-color: #222222;
+}
+.login-button{
+background-color: #2D8CFF;
+}
+.sign-up{
+
+    background-color: #504D4D;
+    color: white !important
+
+    
+}
+/* Default link color (blue) */
+.custom-navbar .inactive-link {
+    
+    color: white !important;
+  }
+  
+  /* Active link color (white) */
+  .custom-navbar .active-link {
+    color: #2D8CFF !important;
+  }
+  
+ 
+  
+  
