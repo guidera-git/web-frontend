@@ -11,13 +11,11 @@ background-color: #2D8CFF;
 
     
 }
-/* Default link color (blue) */
 .custom-navbar .inactive-link {
     
     color: white !important;
   }
   
-  /* Active link color (white) */
   .custom-navbar .active-link {
     color: #2D8CFF !important;
   }
