@@ -6,7 +6,7 @@ function NavigationBar() {
   const [activeLink, setActiveLink] = useState("Home"); 
 
   return (
-    <header className="custom-navbar d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
+    <header className="custom-navbar d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-0 border-bottom border-2 border-primary">
       <div className="col-md-1 mb-2 mb-md-0">
         <a href="/" className="d-inline-flex link-body-emphasis text-decoration-none">
           <img src="/public/guidera_logo.PNG" alt="Guidera Logo" width="70" height="45" />

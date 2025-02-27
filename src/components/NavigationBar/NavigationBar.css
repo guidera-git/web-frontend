@@ -2,7 +2,7 @@
     background-color: #222222;
 }
 .login-button{
-background-color: #2D8CFF;
+background-color: #0d6efd;
 }
 .sign-up{
 
@@ -17,7 +17,7 @@ background-color: #2D8CFF;
   }
   
   .custom-navbar .active-link {
-    color: #2D8CFF !important;
+    color: #0d6efd !important;
   }
   
  

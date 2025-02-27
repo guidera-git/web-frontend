@@ -6,7 +6,7 @@ function Footer() {
   return (
     <div className="container-fluid text-white p-0">
       <footer className="custom-footer d-flex flex-column">
-        <div className="row row-cols-1 row-cols-sm-2 row-cols-md-5 py-4 border-top">
+        <div className="row row-cols-1 row-cols-sm-2 row-cols-md-5 py-4">
         <div className="col mb-3 d-flex flex-column align-items-start">
   <a href="/" className="d-flex align-items-center mb-3 link-light text-decoration-none">
     <img src="/public/guidera_logo.PNG" alt="Guidera Logo" width="80" height="60" />
