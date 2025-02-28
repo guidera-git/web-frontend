@@ -7,6 +7,6 @@ import Home from "./Pages/HomePage/Home";
 import AboutUs from "./Pages/AboutUs/AboutUs";
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <AboutUs />
+    <Home />
   </StrictMode>
 );
