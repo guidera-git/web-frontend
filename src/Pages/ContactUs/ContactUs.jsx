@@ -63,7 +63,7 @@ function Section2() {
 }
 function Section3() {
   return (
-    <div className="p-4 rounded bg-dark text-light border-bottom border-2 border-primary">
+    <div className="p-4 rounded custom-container text-light border-bottom border-2 border-primary">
       <h3 className="text-center mb-4">Send Us a Message</h3>
       <div className="d-flex justify-content-center">
         <div className="w-75">
