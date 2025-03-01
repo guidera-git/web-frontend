@@ -32,7 +32,7 @@ function Section1() {
             <p className="description-text">
               Are you confused about which university to choose or which degree
               fits your goals? Guidera is here to guide you every step of the
-              way – from identifying the best university for you to acing your
+              way - from identifying the best university for you to acing your
               entry tests. We ensure you never feel lost in this journey.
             </p>
             <div className="mt-4">
@@ -120,15 +120,13 @@ const Section3 = () => {
     { name: "Hamza Raza Hussain", role: "Top Developer" },
     { name: "Sami Ullah", role: "AI Specialist" },
     { name: "Saad Mahmood", role: "Data Scientist" },
-    { name: "Jane Smith", role: "Software Engineer" },
   ];
 
   const [index, setIndex] = useState(0);
 
-  // Function to handle next/prev clicks
   const handleSelect = (selectedIndex) => {
     if (selectedIndex >= Math.ceil(teamMembers.length / 2)) {
-      setIndex(0); // Reset to first slide when reaching the end
+      setIndex(0);
     } else {
       setIndex(selectedIndex);
     }
