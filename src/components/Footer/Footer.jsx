@@ -13,7 +13,7 @@ function Footer() {
               className="d-flex align-items-center mb-3 link-light text-decoration-none"
             >
               <img
-                src="/public/guidera_logo.PNG"
+                src="/guidera_logo.PNG"
                 alt="Guidera Logo"
                 width="80"
                 height="60"
