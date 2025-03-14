@@ -3,7 +3,8 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import NavigationBar from "../../components/NavigationBar/NavigationBar";
 import "./TestPreparation.css";
 import React from "react";
-import { useRef } from "react";
+import { useState } from "react";
+import SubjectCard from "../../components/card/SubjectCard";
 
 function TestPreparation() {
   return (
@@ -12,6 +13,7 @@ function TestPreparation() {
       <Section1></Section1>
       <Section2></Section2>
       <Section3></Section3>
+      <Section4></Section4>
       <Footer />
     </>
   );
@@ -58,75 +60,9 @@ function Section1() {
   );
 }
 function Section2() {
-  const subjects = [
-    { title: "Biology", icon: "/person_cat.jpg", color: "bg-primary" },
-    { title: "Physics", icon: "/Analytics.png", color: "bg-light" },
-    { title: "Chemistry", icon: "/person_cat.jpg", color: "bg-primary" },
-    { title: "Computer", icon: "/Analytics.png", color: "bg-light" },
-    { title: "English", icon: "/person_cat.jpg", color: "bg-primary" },
-  ];
-
-  const scrollRef = useRef(null);
-
-  const handleScroll = (direction) => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: direction * 300, behavior: "smooth" });
-    }
-  };
-
-  return (
-    <div className="text-center custom-container text-white py-4 border-bottom border-2 border-primary">
-      <h4 className="fw-bold">Subject Based Preparation</h4>
-      <div className="position-relative">
-        <button
-          className="scroll-btn left btn btn-dark position-absolute top-50 start-0 translate-middle-y"
-          onClick={() => handleScroll(-1)}
-        >
-          ◀
-        </button>
-
-        <div
-          ref={scrollRef}
-          className="d-flex overflow-auto gap-3 px-3 py-2 scroll-container"
-        >
-          {subjects.map((subject, index) => (
-            <div
-              key={index}
-              className={`subject-card d-flex flex-column align-items-center justify-content-center ${subject.color}`}
-            >
-              <span
-                className={`badge ${
-                  !subject.color ? "bg-light" : "bg-primary"
-                }`}
-              >
-                {subject.title}
-              </span>
-              <img
-                src={subject.icon}
-                alt={subject.title}
-                className="img-fluid"
-              />
-              <button className="btn btn-primary mt-2">➜</button>
-            </div>
-          ))}
-        </div>
-
-        <button
-          className="scroll-btn right btn btn-dark position-absolute top-50 end-0 translate-middle-y"
-          onClick={() => handleScroll(1)}
-        >
-          ▶
-        </button>
-      </div>
-
-      {/* Dots for Indicators */}
-      <div className="mt-2">
-        <span className="dot active"></span>
-        <span className="dot"></span>
-      </div>
-    </div>
-  );
+  return <SubjectCard />;
 }
+
 function Section3() {
   const categories = [
     { title: "Past Papers", icon: "/Brain.svg" },
@@ -155,6 +91,71 @@ function Section3() {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+function Section4() {
+  const subjects = [
+    { name: "Biology", progress: 75 },
+    { name: "Computer", progress: 60 },
+    { name: "Chemistry", progress: 50 },
+    { name: "Math", progress: 80 },
+    { name: "Physics", progress: 40 },
+  ];
+  const [overallProgress] = useState(65);
+
+  return (
+    <div className="text-center custom-container text-white py-4 border-bottom border-2 border-primary">
+      <h4 className="fw-bold mb-4">Track Your Progress</h4>
+      <div className="row g-3 px-3">
+        <div className="col-md-6">
+          <h6 className="mb-4">Subject Based Learning</h6>
+          {subjects.map((subject, index) => (
+            <div
+              key={index}
+              className="d-flex align-items-center justify-content-between mb-2"
+            >
+              <span className="fw-bold subject-name ms-5">{subject.name}</span>
+              <div className="progress flex-grow-1 mx-2 progress-container me-5">
+                <div
+                  className="progress-bar bg-primary"
+                  role="progressbar"
+                  style={{ width: `${subject.progress}%` }}
+                  aria-valuenow={subject.progress}
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                >
+                  {subject.progress}%
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="col-md-6 d-flex flex-column align-items-center justify-content-center border-primary border-start overall-progress">
+          <h6>Overall Progress</h6>
+          <div className="progress-circle mt-3">
+            <svg viewBox="0 0 100 100">
+              <circle className="progress-bg" cx="50" cy="50" r="45"></circle>
+              <circle
+                className="progress-fill"
+                cx="50"
+                cy="50"
+                r="45"
+                style={{
+                  strokeDashoffset: 283 - (283 * overallProgress) / 100,
+                }}
+              ></circle>
+              <text x="50" y="55" textAnchor="middle" className="progress-text">
+                {overallProgress}%
+              </text>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <button className="btn btn-lg btn-primary mt-4">
+        <strong>View Progress</strong>
+        <i className="bi bi-arrow-up-right-circle-fill mx-2"></i>
+      </button>
     </div>
   );
 }
