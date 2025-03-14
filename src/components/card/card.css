@@ -1,0 +1,83 @@
+.custom-container {
+  background-color: #222222;
+  padding: 40px 15px;
+}
+.scroll-container {
+  display: flex;
+  overflow: hidden;
+  justify-content: center;
+  width: 100%;
+  max-width: 900px;
+  gap: 10px;
+}
+.scroll-item {
+  flex: 0 0 auto;
+  transition: transform 0.5s ease-in-out;
+}
+.arrow-btn {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  color: #0d6efd;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+}
+.left {
+  left: -40px;
+}
+.right {
+  right: -40px;
+}
+.dots-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+.dot {
+  width: 12px;
+  height: 12px;
+  margin: 5px;
+  background-color: #ccc;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+.dot.active {
+  background-color: #0d6efd;
+}
+@media (max-width: 1024px) {
+  .scroll-container {
+    max-width: 600px;
+  }
+}
+@media (max-width: 768px) {
+  .scroll-container {
+    max-width: 400px;
+  }
+  .left {
+    left: -30px;
+  }
+  .right {
+    right: -30px;
+  }
+  .arrow-btn {
+    font-size: 1.5rem;
+  }
+}
+@media (max-width: 480px) {
+  .scroll-container {
+    max-width: 300px;
+  }
+  .left {
+    left: -20px;
+  }
+  .right {
+    right: -20px;
+  }
+  .arrow-btn {
+    font-size: 1.2rem;
+  }
+}
