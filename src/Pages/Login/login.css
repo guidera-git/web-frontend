@@ -1,0 +1,21 @@
+.custom-container{
+    background-color: #222222;
+    
+    }
+    .google-btn {
+        background-color: white;
+        border: 1px solid red;
+        width: 55%;
+        color: black; /* Default text color */
+        transition: color 0.3s ease-in-out; /* Smooth transition */
+      }
+      
+      .google-btn:hover {
+       background-color: #0d6efd;
+      }
+      ::placeholder {
+        color: lightgray!important; /* White color to ensure visibility */
+        opacity: 1; /* Full opacity */
+      }
+      
+     
