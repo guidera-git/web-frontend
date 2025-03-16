@@ -8,11 +8,9 @@ import { Carousel } from "react-bootstrap";
 function AboutUs() {
   return (
     <>
-      <NavigationBar />
       <Section1></Section1>
       <Section2></Section2>
       <Section3></Section3>
-      <Footer />
     </>
   );
 }

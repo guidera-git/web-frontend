@@ -7,12 +7,10 @@ import "./Home.css";
 function Home() {
   return (
     <div>
-      <NavigationBar />
       <Section1 />
       <Section2 />
       <Section3 />
       <Section4 />
-      <Footer />
     </div>
   );
 }

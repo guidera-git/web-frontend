@@ -6,7 +6,6 @@ import "./Chatbot.css";
 function Chatbot() {
     return (
         <div className="vh-100 d-flex flex-column">
-            <NavigationBar />
             <Section1 />
         </div>
     );

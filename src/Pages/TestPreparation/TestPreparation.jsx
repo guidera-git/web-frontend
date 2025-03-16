@@ -9,12 +9,10 @@ import SubjectCard from "../../components/card/SubjectCard";
 function TestPreparation() {
   return (
     <>
-      <NavigationBar />
       <Section1></Section1>
       <Section2></Section2>
       <Section3></Section3>
       <Section4></Section4>
-      <Footer />
     </>
   );
 }
