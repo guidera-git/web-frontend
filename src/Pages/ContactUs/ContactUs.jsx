@@ -7,11 +7,9 @@ import React from "react";
 function ContactUs() {
   return (
     <>
-      <NavigationBar />
       <Section1></Section1>
       <Section2></Section2>
       <Section3></Section3>
-      <Footer />
     </>
   );
 }
