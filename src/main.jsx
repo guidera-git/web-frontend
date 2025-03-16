@@ -7,8 +7,9 @@ import Home from "./Pages/HomePage/Home";
 import Signup from "./Pages/SignUp/SignUp";
 import AboutUs from "./Pages/AboutUs/AboutUs";
 import Login from "./Pages/Login/login";
+import Chatbot from "./Pages/Chatbot/Chatbot";
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <Home />  
+    <Chatbot />
   </StrictMode>
 );
