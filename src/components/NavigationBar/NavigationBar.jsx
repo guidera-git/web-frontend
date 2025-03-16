@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "./NavigationBar.css";
+import "./NavigationBar.css"; // Import custom styles
 
 function NavigationBar() {
-  const [activeLink, setActiveLink] = useState("Home");
+  const [activeLink, setActiveLink] = useState("Home"); // Default active link
 
   return (
     <header className="custom-navbar d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-0 border-bottom border-2 border-primary">
@@ -27,9 +27,8 @@ function NavigationBar() {
             <li key={item}>
               <a
                 href="#"
-                className={`nav-link ${
-                  activeLink === item ? "active-link" : "inactive-link"
-                }`}
+                className={`nav-link ${activeLink === item ? "active-link" : "inactive-link"
+                  }`}
                 onClick={() => setActiveLink(item)}
               >
                 {item}
@@ -40,23 +39,12 @@ function NavigationBar() {
       </ul>
 
       <div className="col-auto text-end d-flex align-items-center">
-        <img
-          src="/theme.png"
-          alt="Theme Icon"
-          width="25"
-          height="25"
-          className="me-2"
-        />
-        <button
-          type="button"
-          className="login-button btn btn-outline-light me-2"
-        >
-          Login
-        </button>
-        <button type="button" className="sign-up btn btn-light text-primary ">
-          Signup
-        </button>
+        <img src="/public/theme.PNG" alt="Theme Icon" width="25" height="25" className="me-2" />
+        <button type="button" className="login-button btn btn-outline-light me-2">Login</button>
+        <button type="button" className="sign-up btn btn-light text-primary ">Signup</button>
       </div>
+
+
     </header>
   );
 }
