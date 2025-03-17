@@ -10,6 +10,8 @@ import Chatbot from "./Pages/Chatbot/Chatbot";
 import TestPreparation from "./Pages/TestPreparation/TestPreparation";
 import ContactUs from "./Pages/ContactUs/ContactUs";
 import FindUniversity from "./Pages/FindUniversity/FindUniversity";
+import Recommendation from "./Pages/Recommendation/Recommendation";
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -21,6 +23,7 @@ const router = createBrowserRouter([
       { path: "/contactus", element: <ContactUs /> },
       { path: "/FindUniversity", element: <FindUniversity /> },
       { path: "/TestPreparation", element: <TestPreparation /> },
+      { path: "/Recommendation", element: <Recommendation /> },
     ],
   },
   { path: "/signup", element: <Signup /> },
