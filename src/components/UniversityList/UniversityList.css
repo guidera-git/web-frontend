@@ -1,0 +1,20 @@
+.university-card {
+  background-color: #eaeaea;
+  border-radius: 30px;
+  width: 95%;
+  max-width: 900px;
+  margin:auto;
+  transition: transform 0.3s ease-in-out;
+}
+
+.university-card:hover {
+  transform: scale(1.05);
+}
+
+.bi-bookmark-fill {
+  color: blue;
+}
+
+.bi-geo-alt-fill {
+  font-size: 1.2rem;
+}
