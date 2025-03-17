@@ -28,7 +28,7 @@ function NavigationBar() {
           <Nav className="mx-auto">
             {[
               { name: "Home", path: "/" },
-              { name: "Find University", path: "/" },
+              { name: "Find University", path: "/FindUniversity" },
               { name: "Chatbot", path: "/chatbot" },
               { name: "Contact Us", path: "/contactus" },
               { name: "About Us", path: "/aboutus" },

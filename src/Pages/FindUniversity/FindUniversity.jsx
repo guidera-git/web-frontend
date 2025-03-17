@@ -109,9 +109,7 @@ const universities = [
 
 function FindUniversity() {
   const [selectedForComparison, setSelectedForComparison] = useState([]);
-  const [isComparisonCleared, setIsComparisonCleared] = useState(false); // ✅ New state
-
-  // Handle university selection for comparison
+  const [isComparisonCleared, setIsComparisonCleared] = useState(false);
   const handleCompare = (university) => {
     setSelectedForComparison((prev) => {
       if (prev.some((uni) => uni.name === university.name)) {
@@ -122,23 +120,20 @@ function FindUniversity() {
     });
   };
 
-  // Reset comparison
   const resetComparison = () => {
     setSelectedForComparison([]);
     setIsComparisonCleared(true);
-    setTimeout(() => setIsComparisonCleared(false), 0); // Reset back after effect triggers
+    setTimeout(() => setIsComparisonCleared(false), 0);
   };
 
   return (
     <>
-      <NavigationBar />
       <Section1 />
       <Section2
         onCompare={handleCompare}
         isComparisonDisabled={selectedForComparison.length >= 2}
         isComparisonCleared={isComparisonCleared}
       />
-      <Footer />
 
       {selectedForComparison.length === 2 && (
         <ComparisonModal
@@ -293,11 +288,10 @@ const FilterModal = ({ show, onClose, onApply, filters, setFilters }) => {
                   style={{ width: "1.5rem", display: "inline-block" }}
                 >
                   <i
-                    className={`bi ${
-                      filters.rating >= halfStarValue
-                        ? "bi-star-half text-warning"
-                        : "bi-star text-secondary"
-                    } position-absolute`}
+                    className={`bi ${filters.rating >= halfStarValue
+                      ? "bi-star-half text-warning"
+                      : "bi-star text-secondary"
+                      } position-absolute`}
                     style={{
                       cursor: "pointer",
                       fontSize: "1.5rem",
@@ -308,11 +302,10 @@ const FilterModal = ({ show, onClose, onApply, filters, setFilters }) => {
                     }
                   ></i>
                   <i
-                    className={`bi ${
-                      filters.rating >= fullStarValue
-                        ? "bi-star-fill text-warning"
-                        : "bi-star text-secondary"
-                    }`}
+                    className={`bi ${filters.rating >= fullStarValue
+                      ? "bi-star-fill text-warning"
+                      : "bi-star text-secondary"
+                      }`}
                     style={{ cursor: "pointer", fontSize: "1.5rem" }}
                     onClick={() =>
                       setFilters({ ...filters, rating: fullStarValue })
@@ -487,9 +480,8 @@ const Section2 = ({ onCompare, isComparisonDisabled, isComparisonCleared }) => {
                   return (
                     <li
                       key={page}
-                      className={`page-item ${
-                        currentPage === page ? "active" : ""
-                      }`}
+                      className={`page-item ${currentPage === page ? "active" : ""
+                        }`}
                     >
                       <button
                         className="page-link"
@@ -510,9 +502,8 @@ const Section2 = ({ onCompare, isComparisonDisabled, isComparisonCleared }) => {
               }
             )}
             <li
-              className={`page-item ${
-                currentPage === totalPages ? "disabled" : ""
-              }`}
+              className={`page-item ${currentPage === totalPages ? "disabled" : ""
+                }`}
             >
               <button
                 className="page-link"

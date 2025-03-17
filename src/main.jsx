@@ -9,7 +9,7 @@ import Login from "./Pages/Login/Login";
 import Chatbot from "./Pages/Chatbot/Chatbot";
 import TestPreparation from "./Pages/TestPreparation/TestPreparation";
 import ContactUs from "./Pages/ContactUs/ContactUs";
-
+import FindUniversity from "./Pages/FindUniversity/FindUniversity";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -19,6 +19,7 @@ const router = createBrowserRouter([
       { path: "/chatbot", element: <Chatbot /> },
       { path: "/aboutus", element: <AboutUs /> },
       { path: "/contactus", element: <ContactUs /> },
+      { path: "/FindUniversity", element: <FindUniversity /> },
       { path: "/TestPreparation", element: <TestPreparation /> },
     ],
   },
