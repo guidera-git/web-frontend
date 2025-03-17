@@ -5,6 +5,7 @@ import React, { useState } from "react";
 import NavigationBar from "../../components/NavigationBar/NavigationBar";
 import UniversityList from "../../components/UniversityList/UniversityList";
 import ComparisonModal from "../../components/Comparison/ComparisonModal";
+import { useNavigate } from "react-router-dom";
 const universities = [
   {
     name: "UCP",
@@ -146,6 +147,8 @@ function FindUniversity() {
   );
 }
 function Section1() {
+  const navigate = useNavigate(); // Hook for navigation
+
   return (
     <div className="custom-container text-white container border-bottom border-2 border-primary">
       <div className="row min-vh-20">
@@ -155,12 +158,14 @@ function Section1() {
             <span className="text-primary">Perfect University!</span>
           </h2>
           <p className="mt-2 mb-3">
-            Discover universities tailored to your preferences, location, and
-            aspirations
+            Discover universities tailored to your preferences, location, and aspirations.
           </p>
           <div className="d-flex gap-3">
             <button className="btn btn-primary">Start Your Search</button>
-            <button className="btn sign-up btn-outline-secondary">
+            <button
+              className="btn sign-up btn-outline-secondary"
+              onClick={() => navigate("/recommendation")} // Navigate to recommendation page
+            >
               Explore Recommendation
             </button>
           </div>
