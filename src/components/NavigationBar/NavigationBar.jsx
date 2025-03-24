@@ -1,11 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Navbar, Nav, Dropdown, Container } from "react-bootstrap";
+import { ThemeContext } from "../../ThemeContext";
+
 import "./NavigationBar.css";
 
 function NavigationBar() {
+  const { theme, toggleTheme } = useContext(ThemeContext);
   const [activeLink, setActiveLink] = useState("Home");
+
   const [notifications] = useState([
     "New message from Admin",
     "Your profile has been updated",
@@ -16,11 +20,14 @@ function NavigationBar() {
   ]);
 
   return (
-    <Navbar expand="lg" className="custom-navbar border-bottom border-primary px-3">
+    <Navbar expand="lg" className={`custom-navbar border-bottom border-2 border-primary ${theme} px-3 `}>
       <Container fluid>
         <Navbar.Brand as={Link} to="/">
           <img src="/guidera_logo.PNG" alt="Guidera Logo" width="70" height="45" />
         </Navbar.Brand>
+
+
+
 
         <Navbar.Toggle aria-controls="navbar-nav" className="custom-hamburger" />
 
@@ -46,6 +53,7 @@ function NavigationBar() {
           </Nav>
 
           <div className="d-flex align-items-center gap-3">
+            {/* Notifications Dropdown */}
             <Dropdown className="dropdown-notifications" drop="down" align="end">
               <Dropdown.Toggle as="div" className="position-relative" style={{ cursor: "pointer" }}>
                 <img src="/bell.svg" alt="Notifications" width="25" height="25" />
@@ -55,10 +63,7 @@ function NavigationBar() {
                   </span>
                 )}
               </Dropdown.Toggle>
-              <Dropdown.Menu
-                className="p-2 shadow"
-                style={{ minWidth: "250px", maxHeight: "250px", overflowY: "auto" }}
-              >
+              <Dropdown.Menu className="p-2 shadow" style={{ minWidth: "250px", maxHeight: "250px", overflowY: "auto" }}>
                 {notifications.length > 0 ? (
                   notifications.map((notification, index) => (
                     <Dropdown.Item key={index} className="text-wrap">
@@ -71,12 +76,17 @@ function NavigationBar() {
               </Dropdown.Menu>
             </Dropdown>
 
-            {/* Theme Icon */}
-            <img src="/public/theme.PNG" alt="Theme Icon" width="25" height="25" className="me-2" />
+            <img
+              src={theme === "light" ? "/theme2.png" : "/theme.png"}
+              alt="Theme Icon"
+              width="25"
+              height="25"
+              className="theme-toggle-icon me-2"
+              onClick={toggleTheme}
+            />
 
-            {/* Login & Signup Buttons */}
             <Link to="/login">
-              <button type="button" className="login-button btn btn-outline-light ms-3">
+              <button type="button" className="btn login-button ms-3">
                 Login
               </button>
             </Link>

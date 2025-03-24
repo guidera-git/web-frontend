@@ -1,3 +1,11 @@
-.custom-container {
-  background-color: #222222;
+
+.find-university.light .custom-container {
+  background-color: #ffffff !important;
+  color: #000000,;
+}
+
+/* Dark Theme */
+.find-university.dark .custom-container{
+  background-color: #222222 !important;
+  color: #ffffff;
 }

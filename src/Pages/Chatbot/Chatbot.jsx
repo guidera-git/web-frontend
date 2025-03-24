@@ -1,11 +1,14 @@
-import React, { useState } from "react";
+
+import { ThemeContext } from "../../ThemeContext";
+import React, { useContext, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import NavigationBar from "../../components/NavigationBar/NavigationBar";
 import "./Chatbot.css";
 
 function Chatbot() {
+    const { theme } = useContext(ThemeContext);
     return (
-        <div className="vh-100 d-flex flex-column">
+        <div className={`find-university ${theme}`}>
             <Section1 />
         </div>
     );

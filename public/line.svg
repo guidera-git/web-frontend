@@ -1,0 +1,9 @@
+<svg width="220" height="100" viewBox="0 0 220 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Colored Tips -->
+
+  <!-- 6 Small Zigzags + Straight Line -->
+  <polyline points="20,50 30,45 40,55 50,45 60,55 70,45 80,55 90,45 100,55 110,45 120,55 130,50 145,50 160,50 175,50 190,50 200,50"
+      stroke="black" stroke-width="1" fill="none"/>
+
+
+</svg>
