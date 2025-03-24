@@ -24,24 +24,28 @@ function Section1() {
   return (
     <div className="custom-container container-fluid border-bottom border-2 border-primary">
       <div className="row min-vh-20">
-        <div className="col-md-6 d-flex flex-column justify-content-center align-items-start p-5">
-          <h2 className="mx-1">
+        <div className="col-md-6 d-flex flex-column justify-content-center p-5">
+          <h2>
             Guiding Your <span className="text-primary">Academic Journey</span>
           </h2>
           <p>
             We support students in achieving their academic goals through
             personalized guidance and AI-driven recommendations.
           </p>
-          <div className="d-flex gap-3">
+          <div className="d-flex gap-3 justify-content-center">
             <button className="btn btn-primary">Learn More</button>
             <button className="btn sign-up btn-outline-secondary">
               Get Started
             </button>
           </div>
-
         </div>
         <div className="col-md-6 d-flex justify-content-center align-items-center p-0">
-          <img src={"student_laptop.svg"} alt="Home1" width={400} height={400} />
+          <img
+            src={"student_laptop.svg"}
+            alt="Home1"
+            width={400}
+            height={400}
+          />
         </div>
       </div>
     </div>
@@ -54,7 +58,12 @@ function Section2() {
     <div className="custom-container container-fluid border-bottom border-2 border-primary">
       <div className="row p-5 text-center">
         <div className="col-md-4 px-4 border-end">
-          <img src={theme === "light" ? "/homee7.png" : "/home7.png"} alt="Mission Icon" width={80} className="mb-3" />
+          <img
+            src={theme === "light" ? "/homee7.png" : "/home7.png"}
+            alt="Mission Icon"
+            width={80}
+            className="mb-3"
+          />
           <h3>
             Our <span className="text-primary">Mission</span>
           </h3>
@@ -65,7 +74,12 @@ function Section2() {
           </p>
         </div>
         <div className="col-md-4 px-4 border-end">
-          <img src={theme === "light" ? "/homee6.png" : "/home6.png"} alt="Vision Icon" width={80} className="mb-3" />
+          <img
+            src={theme === "light" ? "/homee6.png" : "/home6.png"}
+            alt="Vision Icon"
+            width={80}
+            className="mb-3"
+          />
           <h3>
             Our <span className="text-primary">Vision</span>
           </h3>
@@ -76,7 +90,12 @@ function Section2() {
           </p>
         </div>
         <div className="col-md-4 px-4">
-          <img src={theme === "light" ? "/homee5.png" : "/home5.png"} alt="Values Icon" width={80} className="mb-3" />
+          <img
+            src={theme === "light" ? "/homee5.png" : "/home5.png"}
+            alt="Values Icon"
+            width={80}
+            className="mb-3"
+          />
           <h3>
             Our <span className="text-primary">Values</span>
           </h3>
@@ -98,7 +117,7 @@ function Section3() {
         <div className="col-md-6 d-flex justify-content-center align-items-center p-5">
           <img src="/home3.PNG" alt="Home3" width={400} height={400} />
         </div>
-        <div className="col-md-6 d-flex flex-column justify-content-center align-items-start p-5">
+        <div className="col-md-6 d-flex flex-column justify-content-center p-5">
           <h2>Who we are</h2>
           <p>
             Guidera is your dedicated partner in academic decision-making. With

@@ -44,21 +44,36 @@ const UniversityList = ({
       <div
         className="university-card container p-4 rounded shadow-lg bg-light"
         onClick={handleShowModal}
-        style={{ cursor: "pointer", transition: "0.3s", hover: { transform: "scale(1.02)" } }}
+        style={{
+          cursor: "pointer",
+          transition: "0.3s",
+          hover: { transform: "scale(1.02)" },
+        }}
       >
         <div className="d-flex justify-content-between align-items-center">
           <h4 className="fw-bold">{university.name}</h4>
           <div>
             <i
-              className={`bi ${isBookmarked ? "bi-bookmark-fill text-warning" : "bi-bookmark"} me-2`}
+              className={`bi ${
+                isBookmarked ? "bi-bookmark-fill text-warning" : "bi-bookmark"
+              } me-2`}
               onClick={toggleBookmark}
               style={{ cursor: "pointer", fontSize: "1.5rem" }}
             ></i>
             <i
-              className={`bi bi-arrow-left-right ${isSelectedForComparison ? "text-primary" : "text-dark"}
-              ${isComparisonDisabled && !isSelectedForComparison ? "text-muted" : ""}`}
+              className={`bi bi-arrow-left-right ${
+                isSelectedForComparison ? "text-primary" : "text-dark"
+              }
+              ${
+                isComparisonDisabled && !isSelectedForComparison
+                  ? "text-muted"
+                  : ""
+              }`}
               style={{
-                cursor: isComparisonDisabled && !isSelectedForComparison ? "not-allowed" : "pointer",
+                cursor:
+                  isComparisonDisabled && !isSelectedForComparison
+                    ? "not-allowed"
+                    : "pointer",
                 fontSize: "1.5rem",
               }}
               onClick={handleComparisonClick}
@@ -82,7 +97,11 @@ const UniversityList = ({
               {[...Array(5)].map((_, index) => (
                 <i
                   key={index}
-                  className={`bi ${index + 1 <= rating ? "bi-star-fill text-warning" : "bi-star"} `}
+                  className={`bi ${
+                    index + 1 <= rating
+                      ? "bi-star-fill text-warning"
+                      : "bi-star"
+                  } `}
                   style={{ cursor: "pointer" }}
                   onClick={() => handleStarClick(index)}
                 ></i>
@@ -97,7 +116,8 @@ const UniversityList = ({
             <h6 className="fw-bold">${university.tuition}</h6>
 
             <p className="text-muted mt-2">
-              <i className="bi bi-geo-alt-fill text-danger"></i> {university.location}
+              <i className="bi bi-geo-alt-fill text-danger"></i>{" "}
+              {university.location}
             </p>
           </div>
         </div>
@@ -162,9 +182,12 @@ const UniversityList = ({
                   <Tab.Pane eventKey="fee">
                     <h5>Fee Structure</h5>
                     <p>
-                      <strong>Tuition per Semester:</strong> ${university.tuition}
+                      <strong>Tuition per Semester:</strong> $
+                      {university.tuition}
                     </p>
-                    <p><strong>Other Fees:</strong> {university.otherFees}</p>
+                    <p>
+                      <strong>Other Fees:</strong> {university.otherFees}
+                    </p>
                   </Tab.Pane>
                   <Tab.Pane eventKey="about">
                     <h5>About {university.name}</h5>
@@ -176,12 +199,15 @@ const UniversityList = ({
           </Tab.Container>
         </Modal.Body>
         <Modal.Footer style={{ backgroundColor: "#222222", color: "white" }}>
-          <Button variant="secondary" className="btn-primary" onClick={handleCloseModal}>
+          <Button
+            variant="secondary"
+            className="btn-primary"
+            onClick={handleCloseModal}
+          >
             Close
           </Button>
         </Modal.Footer>
       </Modal>
-
     </>
   );
 };
