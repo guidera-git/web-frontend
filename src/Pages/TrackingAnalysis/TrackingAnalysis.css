@@ -1,0 +1,44 @@
+.container {
+  max-width: 900px;
+  margin: auto;
+}
+
+/* Application Progress Card */
+.progress-card, .uni-card {
+  border: 2px solid var(--bs-primary);
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 20px;
+  box-shadow: 2px 2px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Progress Bar */
+.progress {
+  background: #ddd;
+  height: 10px;
+  border-radius: 5px;
+}
+
+.progress-bar {
+  background: var(--bs-success);
+  height: 10px;
+  text-align: center;
+  color: white;
+  font-weight: bold;
+}
+
+/* Modal Styling */
+.tracking-modal {
+  position: fixed;
+  top: 20%;
+  left: 50%;
+  transform: translate(-50%, -20%);
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 2px 2px 20px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  max-width: 500px; /* Prevents it from getting too wide */
+  width: 90%; /* Ensures responsiveness */
+}
+
