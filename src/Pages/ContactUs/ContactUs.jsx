@@ -2,15 +2,17 @@ import Footer from "../../components/Footer/Footer";
 import "bootstrap/dist/css/bootstrap.min.css";
 import NavigationBar from "../../components/NavigationBar/NavigationBar";
 import "./ContactUs.css";
-import React from "react";
-
+import { ThemeContext } from "../../ThemeContext";
+import React, { useContext, useState } from "react";
 function ContactUs() {
+
+  const { theme } = useContext(ThemeContext);
   return (
-    <>
+    <div className={`find-university ${theme}`}>
       <Section1></Section1>
       <Section2></Section2>
       <Section3></Section3>
-    </>
+    </div >
   );
 }
 function Section1() {

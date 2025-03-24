@@ -2,16 +2,19 @@ import Footer from "../../components/Footer/Footer";
 import "bootstrap/dist/css/bootstrap.min.css";
 import NavigationBar from "../../components/NavigationBar/NavigationBar";
 import "./AboutUs.css";
-import { useState } from "react";
+import { ThemeContext } from "../../ThemeContext";
+import React, { useContext, useState } from "react";
 import { Carousel } from "react-bootstrap";
 
 function AboutUs() {
+  const { theme } = useContext(ThemeContext);
   return (
-    <>
+
+    <div className={`find-university ${theme}`}>
       <Section1></Section1>
       <Section2></Section2>
       <Section3></Section3>
-    </>
+    </div>
   );
 }
 function Section1() {

@@ -1,12 +1,16 @@
-import React from "react";
+import React, { useContext } from "react";
+import { ThemeContext } from "../../ThemeContext";
 import Footer from "../../components/Footer/Footer";
 import "bootstrap/dist/css/bootstrap.min.css";
 import NavigationBar from "../../components/NavigationBar/NavigationBar";
-import { FaArrowRight } from "react-icons/fa"; // Importing arrow icon
+import { FaArrowRight } from "react-icons/fa";
 import "./Home.css";
+
 function Home() {
+  const { theme } = useContext(ThemeContext);
+
   return (
-    <div>
+    <div className={`home-page ${theme}`}>
       <Section1 />
       <Section2 />
       <Section3 />
@@ -14,12 +18,14 @@ function Home() {
     </div>
   );
 }
+
 function Section1() {
+  const { theme } = useContext(ThemeContext);
   return (
-    <div className="custom-container text-white container-fluid border-bottom border-2 border-primary">
+    <div className="custom-container container-fluid border-bottom border-2 border-primary">
       <div className="row min-vh-20">
         <div className="col-md-6 d-flex flex-column justify-content-center align-items-start p-5">
-          <h2>
+          <h2 className="mx-1">
             Guiding Your <span className="text-primary">Academic Journey</span>
           </h2>
           <p>
@@ -32,24 +38,23 @@ function Section1() {
               Get Started
             </button>
           </div>
-          <div className="mt-3 w-100 d-flex justify-content-center">
-            <img src="/home2.png" alt="Home2" width={200} height={200} />
-          </div>
-        </div>
 
+        </div>
         <div className="col-md-6 d-flex justify-content-center align-items-center p-0">
-          <img src="/home1.PNG" alt="Home1" width={400} height={400} />
+          <img src={"student_laptop.svg"} alt="Home1" width={400} height={400} />
         </div>
       </div>
     </div>
   );
 }
+
 function Section2() {
+  const { theme } = useContext(ThemeContext);
   return (
-    <div className="custom-container text-white container-fluid border-bottom border-2 border-primary">
+    <div className="custom-container container-fluid border-bottom border-2 border-primary">
       <div className="row p-5 text-center">
         <div className="col-md-4 px-4 border-end">
-          <img src="home7.png" alt="Mission Icon" width={80} className="mb-3" />
+          <img src={theme === "light" ? "/homee7.png" : "/home7.png"} alt="Mission Icon" width={80} className="mb-3" />
           <h3>
             Our <span className="text-primary">Mission</span>
           </h3>
@@ -59,9 +64,8 @@ function Section2() {
             personalized guidance, innovative tools, and dedicated support.
           </p>
         </div>
-
         <div className="col-md-4 px-4 border-end">
-          <img src="/home6.png" alt="Vision Icon" width={80} className="mb-3" />
+          <img src={theme === "light" ? "/homee6.png" : "/home6.png"} alt="Vision Icon" width={80} className="mb-3" />
           <h3>
             Our <span className="text-primary">Vision</span>
           </h3>
@@ -71,9 +75,8 @@ function Section2() {
             solutions.
           </p>
         </div>
-
         <div className="col-md-4 px-4">
-          <img src="/home5.png" alt="Values Icon" width={80} className="mb-3" />
+          <img src={theme === "light" ? "/homee5.png" : "/home5.png"} alt="Values Icon" width={80} className="mb-3" />
           <h3>
             Our <span className="text-primary">Values</span>
           </h3>
@@ -90,12 +93,11 @@ function Section2() {
 
 function Section3() {
   return (
-    <div className="custom-container text-white container-fluid border-bottom border-2 border-primary">
+    <div className="custom-container container-fluid border-bottom border-2 border-primary">
       <div className="row min-vh-20">
         <div className="col-md-6 d-flex justify-content-center align-items-center p-5">
           <img src="/home3.PNG" alt="Home3" width={400} height={400} />
         </div>
-
         <div className="col-md-6 d-flex flex-column justify-content-center align-items-start p-5">
           <h2>Who we are</h2>
           <p>
@@ -134,15 +136,14 @@ function Section4() {
     {
       image: "/home11.png",
       title: "AI Chatbot",
-      description: "24/7 support for all your academic queries and planning..",
+      description: "24/7 support for all your academic queries and planning.",
     },
   ];
 
   return (
-    <div className="custom-container text-white container-fluid border-bottom border-2 border-primary py-1">
+    <div className="custom-container container-fluid border-bottom border-2 border-primary py-1">
       <div className="container">
         <h2 className="text-center mb-5">Our Services</h2>
-
         <div className="row g-4">
           {services.map((service, index) => (
             <div
@@ -156,11 +157,8 @@ function Section4() {
                 height={100}
                 className="mb-3"
               />
-
               <h4>{service.title}</h4>
-
               <p>{service.description}</p>
-
               <button className="btn btn-transparent text-primary d-flex align-items-center justify-content-center gap-3 border-0 w-100">
                 <FaArrowRight
                   className="text-primary"

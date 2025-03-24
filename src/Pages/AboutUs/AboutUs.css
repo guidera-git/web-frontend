@@ -14,14 +14,13 @@
 
 .sub-heading {
   font-size: 1.5rem;
-  color: #ffffff;
+  color: var(--text-color);
 }
 
 .description-text {
   font-size: 1.1rem;
   max-width: 800px;
-  margin: 0 auto;
-  color: #dcdcdc;
+  margin: 0 auto;  color: var(--text-color);
 }
 
 .start-btn {
