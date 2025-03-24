@@ -17,5 +17,16 @@ background-color: #222222;
     color: lightgray!important; /* White color to ensure visibility */
     opacity: 1; /* Full opacity */
   }
+  .custom-input {
+    border-radius: 20px;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border: none !important;
+    padding: 10px 15px;
+    font-size: 16px;
+  }
+  .custom-input:focus {
+    outline: none;
+    box-shadow: rgba(255, 255, 255, 0.1);
+  }
   
  

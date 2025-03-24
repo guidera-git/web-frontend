@@ -1,7 +1,9 @@
 import Footer from "../../components/Footer/Footer";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./FindUniversity.css";
-import React, { useState } from "react";
+import { ThemeContext } from "../../ThemeContext";
+import React, { useContext, useState } from "react";
+
 import NavigationBar from "../../components/NavigationBar/NavigationBar";
 import UniversityList from "../../components/UniversityList/UniversityList";
 import ComparisonModal from "../../components/Comparison/ComparisonModal";
@@ -126,9 +128,10 @@ function FindUniversity() {
     setIsComparisonCleared(true);
     setTimeout(() => setIsComparisonCleared(false), 0);
   };
-
+  const { theme } = useContext(ThemeContext);
   return (
-    <>
+
+    <div className={`find-university ${theme}`}>
       <Section1 />
       <Section2
         onCompare={handleCompare}
@@ -143,7 +146,7 @@ function FindUniversity() {
           onClose={resetComparison}
         />
       )}
-    </>
+    </div>
   );
 }
 function Section1() {

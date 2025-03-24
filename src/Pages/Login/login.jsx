@@ -16,14 +16,14 @@ function Login() {
       <div className="container-fluid h-100">
         <div className="row h-100">
           <div className="col-md d-flex align-items-center justify-content-center flex-column p-4 text-white">
-
             <img
               src="/guidera_logo.PNG"
               alt="Guidera Logo"
-              className="mb-3 mt-0"
+              className="mb-3 mt-0 justify-content-center"
               style={{ width: "150px", paddingTop: "5px" }}
             />
-
+            <h2 className="p-1">Welcome Back</h2>
+            <h3 className="p-1">Log into your Account</h3>
             <button className="btn google-btn mb-3 d-flex align-items-center justify-content-center">
               <img
                 src="/google.svg"

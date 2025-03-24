@@ -1,6 +1,6 @@
 .custom-container{
     background-color: #222222 !important;
-    height: 100vh;
+  
         width: 100vw !important; /* Ensure full width */
         max-width: 100vw !important; /* Prevent overflow */
         overflow-x: hidden; /* Hide any horizontal overflow */
