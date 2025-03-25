@@ -1,0 +1,119 @@
+/* Core Layout - Kept as is */
+.container {
+  max-width: 1280px;
+  margin: auto;
+  padding: 2rem;
+}
+/* ===== Card Stack Styles ===== */
+.card-stack-container {
+  position: relative;
+  min-height: 190px;
+  margin-bottom: 2rem;
+  width: 100%; /* Add this to ensure proper sizing */
+}
+
+.card-stack-wrapper {
+  min-height: 180px;
+  position: relative;
+  height: 100%;
+}
+
+.progress-card {
+  position: absolute;
+  width: 100%;
+  min-height: 180px;
+  border: 2px solid var(--bs-primary);
+  border-radius: 10px;
+  padding: 15px;
+  background: #333333;
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+/* Active Card */
+.progress-card.active {
+  z-index: 10;
+  opacity: 1;
+  transform: translateX(0) scale(1);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* Inactive Cards */
+.progress-card.inactive {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Animation Classes */
+.progress-card.animating.next {
+  animation: slideInFromRight 0.4s forwards;
+}
+
+.progress-card.animating.prev {
+  animation: slideOutToLeft 0.4s forwards;
+}
+
+@keyframes slideInFromRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideOutToLeft {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(-100%); opacity: 0; }
+}
+
+/* Progress Bar - Kept as is */
+.progress {
+  background: #e9ecef;
+  height: 12px;
+  border-radius: 6px;
+  margin: 10px 0;
+  overflow: visible;
+}
+
+.progress-bar {
+  height: 100%;
+  font-size: 0.7rem;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  transition: width 0.6s ease;
+}
+
+/* Modal - Kept as is */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 5%;
+  z-index: 1050;
+  backdrop-filter: blur(3px);
+}
+
+.tracking-modal {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+  width: 90%;
+  max-width: 500px;
+  animation: fadeIn 0.3s;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+/* Touch device optimizations - Kept as is */
+@media (pointer: coarse) {
+  .progress-card {
+    border-width: 3px;
+  }
+}

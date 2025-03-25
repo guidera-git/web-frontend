@@ -20,16 +20,24 @@ function NavigationBar() {
   ]);
 
   return (
-    <Navbar expand="lg" className={`custom-navbar border-bottom border-2 border-primary ${theme} px-3 `}>
+    <Navbar
+      expand="lg"
+      className={`custom-navbar border-bottom border-2 border-primary ${theme} px-3 `}
+    >
       <Container fluid>
         <Navbar.Brand as={Link} to="/">
-          <img src="/guidera_logo.PNG" alt="Guidera Logo" width="70" height="45" />
+          <img
+            src="/guidera_logo.PNG"
+            alt="Guidera Logo"
+            width="70"
+            height="45"
+          />
         </Navbar.Brand>
 
-
-
-
-        <Navbar.Toggle aria-controls="navbar-nav" className="custom-hamburger" />
+        <Navbar.Toggle
+          aria-controls="navbar-nav"
+          className="custom-hamburger"
+        />
 
         <Navbar.Collapse id="navbar-nav">
           <Nav className="mx-auto">
@@ -39,12 +47,15 @@ function NavigationBar() {
               { name: "Chatbot", path: "/chatbot" },
               { name: "Contact Us", path: "/contactus" },
               { name: "About Us", path: "/aboutus" },
+              { name: "Tracking", path: "/tracking" },
             ].map(({ name, path }) => (
               <Nav.Link
                 key={name}
                 as={Link}
                 to={path}
-                className={`nav-link ${activeLink === name ? "active-link" : "inactive-link"}`}
+                className={`nav-link ${
+                  activeLink === name ? "active-link" : "inactive-link"
+                }`}
                 onClick={() => setActiveLink(name)}
               >
                 {name}
@@ -54,16 +65,36 @@ function NavigationBar() {
 
           <div className="d-flex align-items-center gap-3">
             {/* Notifications Dropdown */}
-            <Dropdown className="dropdown-notifications" drop="down" align="end">
-              <Dropdown.Toggle as="div" className="position-relative" style={{ cursor: "pointer" }}>
-                <img src="/bell.svg" alt="Notifications" width="25" height="25" />
+            <Dropdown
+              className="dropdown-notifications"
+              drop="down"
+              align="end"
+            >
+              <Dropdown.Toggle
+                as="div"
+                className="position-relative"
+                style={{ cursor: "pointer" }}
+              >
+                <img
+                  src="/bell.svg"
+                  alt="Notifications"
+                  width="25"
+                  height="25"
+                />
                 {notifications.length > 0 && (
                   <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                     {notifications.length}
                   </span>
                 )}
               </Dropdown.Toggle>
-              <Dropdown.Menu className="p-2 shadow" style={{ minWidth: "250px", maxHeight: "250px", overflowY: "auto" }}>
+              <Dropdown.Menu
+                className="p-2 shadow"
+                style={{
+                  minWidth: "250px",
+                  maxHeight: "250px",
+                  overflowY: "auto",
+                }}
+              >
                 {notifications.length > 0 ? (
                   notifications.map((notification, index) => (
                     <Dropdown.Item key={index} className="text-wrap">
@@ -91,7 +122,10 @@ function NavigationBar() {
               </button>
             </Link>
             <Link to="/signup">
-              <button type="button" className="sign-up btn btn-light text-primary ms-2">
+              <button
+                type="button"
+                className="sign-up btn btn-light text-primary ms-2"
+              >
                 Signup
               </button>
             </Link>

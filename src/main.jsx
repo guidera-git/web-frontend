@@ -12,6 +12,7 @@ import TestPreparation from "./Pages/TestPreparation/TestPreparation";
 import ContactUs from "./Pages/ContactUs/ContactUs";
 import FindUniversity from "./Pages/FindUniversity/FindUniversity";
 import Recommendation from "./Pages/Recommendation/Recommendation";
+import TrackingAnalysis from "./Pages/TrackingAnalysis/TrackingAnalysis";
 
 const router = createBrowserRouter([
   {
@@ -25,6 +26,7 @@ const router = createBrowserRouter([
       { path: "/FindUniversity", element: <FindUniversity /> },
       { path: "/TestPreparation", element: <TestPreparation /> },
       { path: "/Recommendation", element: <Recommendation /> },
+      { path: "/tracking", element: <TrackingAnalysis /> },
     ],
   },
   { path: "/signup", element: <Signup /> },
