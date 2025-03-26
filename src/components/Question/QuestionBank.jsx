@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Question from "./Question";
 import "bootstrap/dist/css/bootstrap.min.css";
 
@@ -358,6 +358,7 @@ const questionsData = {
 
 function QuestionBank() {
   const { subject } = useParams();
+  const navigate = useNavigate();
   const [answers, setAnswers] = useState({});
   const [error, setError] = useState(false);
   const [submitted, setSubmitted] = useState(false); // New state
@@ -365,6 +366,8 @@ function QuestionBank() {
   useEffect(() => {
     setAnswers({});
     setError(false);
+    setSubmitted(false);
+    setResults(null);
   }, [subject]);
 
   const handleAnswerChange = (questionId, answer) => {
@@ -409,29 +412,90 @@ function QuestionBank() {
       setSubmitted(true);
     }
   };
-  const ResultsScreen = ({ results }) => {
+  const handleTryAgain = () => {
+    // Reset the quiz state to start again
+    setAnswers({});
+    setError(false);
+    setSubmitted(false);
+    setResults(null);
+  };
+
+  const handleBackToSubjects = () => {
+    // Navigate back to the subjects page
+    navigate("/TestPreparation");
+  };
+
+  const ResultsScreen = ({ results, onTryAgain, onBackToSubjects }) => {
     return (
-      <div className="container mt-4 text-center">
-        <h1 className="display-4">Guidera.</h1>
+      <div className="container mt-2 text-center">
+        <h1 className="display-4">Performance Summary</h1>
         <div className="mt-4">
-          <h2 className="display-1">{results.percentage}%</h2>
-          <h3 className="mt-2">Grade: {results.grade}</h3>
-        </div>
-        <div className="row mt-4 justify-content-center bg-dark p-3 rounded">
-          <div className="col-6 text-center text-white border-end">
-            <h3 className="text-success">{results.correct}</h3>
-            <p>Correct</p>
+          {/* Hollow circular progress bar */}
+          <div className="position-relative d-inline-flex align-items-center justify-content-center">
+            <div
+              className="progress-circle-overlay"
+              style={{
+                width: "200px",
+                height: "200px",
+                borderRadius: "50%",
+                border: "10px solid #e0e0e0", // Light gray background track
+                position: "relative",
+              }}
+            >
+              <div
+                className="progress-circle-fill"
+                style={{
+                  position: "absolute",
+                  top: "-10px",
+                  left: "-10px",
+                  width: "200px",
+                  height: "200px",
+                  borderRadius: "50%",
+                  border: "10px solid transparent",
+                  borderTopColor: "#4FFDB0", // Green progress color
+                  borderRightColor: "#4CAF50",
+                  transform: `rotate(${
+                    (360 * results.percentage) / 100 - 90
+                  }deg)`,
+                  clipPath: "polygon(0 0, 50% 0, 50% 100%, 0 100%)",
+                }}
+              ></div>
+              <div className="position-absolute top-50 start-50 translate-middle">
+                <h2 className="display-4 mb-0 fw-bold">
+                  {results.percentage}%
+                </h2>
+              </div>
+            </div>
           </div>
-          <div className="col-6 text-center text-white">
-            <h3 className="text-danger">{results.incorrect}</h3>
-            <p>Incorrect</p>
+          <h3 className="mt-2 fw-bold">Grade: {results.grade}</h3>
+        </div>
+
+        {/* Stats container */}
+        <div className="d-flex justify-content-center align-items-center m-5">
+          <div
+            className="row bg-dark p-3 rounded"
+            style={{
+              maxWidth: "550px",
+              width: "100%",
+            }}
+          >
+            <div className="col-6 text-center text-white border-end">
+              <h3 className="text-success">{results.correct}</h3>
+              <p className="fw-bold">Correct</p>
+            </div>
+            <div className="col-6 text-center text-white">
+              <h3 className="text-danger">{results.incorrect}</h3>
+              <p className="fw-bold">Incorrect</p>
+            </div>
           </div>
         </div>
+
+        {/* Horizontal progress bar */}
         <div className="mt-4" style={{ maxWidth: "500px", margin: "0 auto" }}>
           <div className="progress" style={{ height: "30px" }}>
             <div
-              className="progress-bar bg-success"
-              style={{ width: `${results.percentage}%` }}
+              className="progress-bar"
+              style={{ width: `${results.percentage}%`, background: "#4FFDB0" }}
             ></div>
           </div>
           <div className="d-flex justify-content-between mt-2">
@@ -439,51 +503,42 @@ function QuestionBank() {
             <span>100%</span>
           </div>
         </div>
-        <div className="mt-4">
-          <h4>Performance Summary</h4>
-          <div
-            className="chart-container"
-            style={{ height: "200px", width: "100%" }}
+
+        {/* Action buttons */}
+        <div className="d-flex justify-content-center gap-3 mt-4 mb-5">
+          <button
+            className="btn btn-outline-primary px-4 py-2 fw-bold"
+            onClick={onBackToSubjects}
           >
-            <div
-              className="d-flex align-items-end justify-content-center"
-              style={{ height: "100%" }}
-            >
-              <div
-                className="d-flex align-items-end"
-                style={{ height: "100%", gap: "20px" }}
-              >
-                <div className="d-flex flex-column align-items-center">
-                  <div
-                    className="bg-success"
-                    style={{
-                      width: "40px",
-                      height: `${(results.correct / results.total) * 100}%`,
-                    }}
-                  ></div>
-                  <span>Correct</span>
-                </div>
-                <div className="d-flex flex-column align-items-center">
-                  <div
-                    className="bg-danger"
-                    style={{
-                      width: "40px",
-                      height: `${(results.incorrect / results.total) * 100}%`,
-                    }}
-                  ></div>
-                  <span>Incorrect</span>
-                </div>
-              </div>
-            </div>
-          </div>
+            <i className="bi bi-arrow-left me-2"></i>
+            Back to Subjects
+          </button>
+          <button
+            className="btn btn-primary px-4 py-2 fw-bold"
+            onClick={onTryAgain}
+          >
+            <i className="bi bi-arrow-repeat me-2"></i>
+            Try Again
+          </button>
         </div>
+
+        {/* Optional CSS for smoother animation */}
+        <style jsx>{`
+          .progress-circle-fill {
+            transition: transform 0.5s ease;
+          }
+        `}</style>
       </div>
     );
   };
   return (
     <div className="container mt-4">
       {submitted ? (
-        <ResultsScreen results={results} />
+        <ResultsScreen
+          results={results}
+          onTryAgain={handleTryAgain}
+          onBackToSubjects={handleBackToSubjects}
+        />
       ) : (
         <>
           <h2 className="text-center text-primary">
