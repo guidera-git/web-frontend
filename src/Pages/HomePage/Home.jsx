@@ -5,6 +5,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import NavigationBar from "../../components/NavigationBar/NavigationBar";
 import { FaArrowRight } from "react-icons/fa";
 import "./Home.css";
+import { useNavigate } from "react-router-dom";
 
 function Home() {
   const { theme } = useContext(ThemeContext);
@@ -133,29 +134,34 @@ function Section3() {
 }
 
 function Section4() {
+  const navigate = useNavigate();
   const services = [
     {
       image: "/home8.png",
       title: "Find University",
       description:
         "Get tailored university suggestions that align with your academic goals and preferences.",
+      link: "/FindUniversity",
     },
     {
       image: "/home9.png",
-      title: "Degree Recommendations",
+      title: "Analysis & Tracking",
       description:
         "Find the perfect degree program that suits your interests and career ambitions.",
+      link: "/tracking",
     },
     {
       image: "/home10.png",
       title: "Test Preparation Assistance",
       description:
         "Prepare for entrance exams with customized question sets and expert tips.",
+      link: "/TestPreparation",
     },
     {
       image: "/home11.png",
       title: "AI Chatbot",
       description: "24/7 support for all your academic queries and planning.",
+      link: "/chatbot",
     },
   ];
 
@@ -178,7 +184,10 @@ function Section4() {
               />
               <h4>{service.title}</h4>
               <p>{service.description}</p>
-              <button className="btn btn-transparent text-primary d-flex align-items-center justify-content-center gap-3 border-0 w-100">
+              <button
+                className="btn btn-transparent text-primary d-flex align-items-center justify-content-center gap-3 border-0 w-100"
+                onClick={() => navigate(service.link)}
+              >
                 <FaArrowRight
                   className="text-primary"
                   style={{ fontSize: "1.5rem" }}

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { useNavigate } from "react-router-dom";
 import "./card.css";
 
 function SubjectCard() {
+  const navigate = useNavigate();
   const subjects = [
     { title: "Biology", icon: "/person_cat.jpg", color: "#ffffff" },
     { title: "Physics", icon: "/Analytics.png", color: "#0d6efd" },
@@ -37,6 +39,9 @@ function SubjectCard() {
       (prevIndex) => (prevIndex - 1 + subjects.length) % subjects.length
     );
 
+  const handleSelectSubject = (subject) =>
+    navigate(`/quiz/${subject.title.toLowerCase()}`);
+
   const currentVisibleCards = Array.from(
     { length: visibleCards },
     (_, i) => subjects[(index + i) % subjects.length]
@@ -68,6 +73,7 @@ function SubjectCard() {
                 color: "white",
                 transition: "transform 0.5s ease-in-out",
               }}
+              onClick={() => handleSelectSubject(subject)}
             >
               <h5>
                 <span
