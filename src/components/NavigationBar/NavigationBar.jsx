@@ -47,7 +47,7 @@ function NavigationBar() {
               { name: "Chatbot", path: "/chatbot" },
               { name: "Contact Us", path: "/contactus" },
               { name: "About Us", path: "/aboutus" },
-              { name: "Tracking", path: "/tracking" },
+              { name: "Form", path: "/Form" },
             ].map(({ name, path }) => (
               <Nav.Link
                 key={name}

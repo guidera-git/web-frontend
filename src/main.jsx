@@ -15,6 +15,8 @@ import Recommendation from "./Pages/Recommendation/Recommendation";
 import TrackingAnalysis from "./Pages/TrackingAnalysis/TrackingAnalysis";
 import SubjectCard from "./components/card/SubjectCard";
 import QuestionBank from "./components/Question/QuestionBank";
+import ProfilePage from "./Pages/Profile/Profile";
+import Form from "./Pages/Form/Form";
 
 const router = createBrowserRouter([
   {
@@ -35,6 +37,8 @@ const router = createBrowserRouter([
   },
   { path: "/signup", element: <Signup /> },
   { path: "/login", element: <Login /> },
+  { path: "/Profile", element: <ProfilePage /> },
+  { path: "/Form", element: <Form /> },
 ]);
 
 createRoot(document.getElementById("root")).render(
