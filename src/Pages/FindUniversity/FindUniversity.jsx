@@ -29,7 +29,7 @@ const universities = [
   },
   {
     name: "UCP",
-    degree: "BSSE",
+    degree: "BSCE",
     duration: "10 Semesters",
     beginning: "Summer 2025",
     tuition: "180000 PKR",
@@ -130,7 +130,6 @@ function FindUniversity() {
   };
   const { theme } = useContext(ThemeContext);
   return (
-
     <div className={`find-university ${theme}`}>
       <Section1 />
       <Section2
@@ -161,7 +160,8 @@ function Section1() {
             <span className="text-primary">Perfect University!</span>
           </h2>
           <p className="mt-2 mb-3">
-            Discover universities tailored to your preferences, location, and aspirations.
+            Discover universities tailored to your preferences, location, and
+            aspirations.
           </p>
           <div className="d-flex gap-3">
             <button className="btn btn-primary">Start Your Search</button>
@@ -296,10 +296,11 @@ const FilterModal = ({ show, onClose, onApply, filters, setFilters }) => {
                   style={{ width: "1.5rem", display: "inline-block" }}
                 >
                   <i
-                    className={`bi ${filters.rating >= halfStarValue
-                      ? "bi-star-half text-warning"
-                      : "bi-star text-secondary"
-                      } position-absolute`}
+                    className={`bi ${
+                      filters.rating >= halfStarValue
+                        ? "bi-star-half text-warning"
+                        : "bi-star text-secondary"
+                    } position-absolute`}
                     style={{
                       cursor: "pointer",
                       fontSize: "1.5rem",
@@ -310,10 +311,11 @@ const FilterModal = ({ show, onClose, onApply, filters, setFilters }) => {
                     }
                   ></i>
                   <i
-                    className={`bi ${filters.rating >= fullStarValue
-                      ? "bi-star-fill text-warning"
-                      : "bi-star text-secondary"
-                      }`}
+                    className={`bi ${
+                      filters.rating >= fullStarValue
+                        ? "bi-star-fill text-warning"
+                        : "bi-star text-secondary"
+                    }`}
                     style={{ cursor: "pointer", fontSize: "1.5rem" }}
                     onClick={() =>
                       setFilters({ ...filters, rating: fullStarValue })
@@ -488,8 +490,9 @@ const Section2 = ({ onCompare, isComparisonDisabled, isComparisonCleared }) => {
                   return (
                     <li
                       key={page}
-                      className={`page-item ${currentPage === page ? "active" : ""
-                        }`}
+                      className={`page-item ${
+                        currentPage === page ? "active" : ""
+                      }`}
                     >
                       <button
                         className="page-link"
@@ -510,8 +513,9 @@ const Section2 = ({ onCompare, isComparisonDisabled, isComparisonCleared }) => {
               }
             )}
             <li
-              className={`page-item ${currentPage === totalPages ? "disabled" : ""
-                }`}
+              className={`page-item ${
+                currentPage === totalPages ? "disabled" : ""
+              }`}
             >
               <button
                 className="page-link"

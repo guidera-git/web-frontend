@@ -22,6 +22,9 @@ const Form = () => {
     analysisEnjoyment: "",
     logicalTasks: "",
     explainingAbility: "",
+    innovativeIdeas: "",
+    attentionToDetail: "",
+    helpingOthers: "",
     excitingActivity: "",
     projectPreference: "",
   });
@@ -374,6 +377,104 @@ const Form = () => {
                       <label
                         className="btn btn-outline-primary flex-grow-1"
                         htmlFor={`explainingAbility-${option}`}
+                      >
+                        {option}
+                      </label>
+                    </React.Fragment>
+                  ))}
+                </div>
+              </div>
+              <div className="mb-4">
+                <p className="fw-bold">
+                  I enjoy brainstorming innovative ideas to solve challenges.
+                </p>
+                <div className="btn-group d-flex flex-wrap" role="group">
+                  {[
+                    "Strongly Disagree",
+                    "Disagree",
+                    "Neutral",
+                    "Agree",
+                    "Strongly Agree",
+                  ].map((option) => (
+                    <React.Fragment key={option}>
+                      <input
+                        type="radio"
+                        className="btn-check"
+                        name="innovativeIdeas"
+                        id={`innovativeIdeas-${option}`}
+                        value={option}
+                        checked={formData.innovativeIdeas === option}
+                        onChange={handleChange}
+                      />
+                      <label
+                        className="btn btn-outline-primary flex-grow-1"
+                        htmlFor={`innovativeIdeas-${option}`}
+                      >
+                        {option}
+                      </label>
+                    </React.Fragment>
+                  ))}
+                </div>
+              </div>
+              <div className="mb-4">
+                <p className="fw-bold">
+                  I pay close attention to details to ensure accuracy in my
+                  work.
+                </p>
+                <div className="btn-group d-flex flex-wrap" role="group">
+                  {[
+                    "Strongly Disagree",
+                    "Disagree",
+                    "Neutral",
+                    "Agree",
+                    "Strongly Agree",
+                  ].map((option) => (
+                    <React.Fragment key={option}>
+                      <input
+                        type="radio"
+                        className="btn-check"
+                        name="attentionToDetail"
+                        id={`attentionToDetail-${option}`}
+                        value={option}
+                        checked={formData.attentionToDetail === option}
+                        onChange={handleChange}
+                      />
+                      <label
+                        className="btn btn-outline-primary flex-grow-1"
+                        htmlFor={`attentionToDetail-${option}`}
+                      >
+                        {option}
+                      </label>
+                    </React.Fragment>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mb-4">
+                <p className="fw-bold">
+                  I feel fulfilled when helping others overcome challenges.
+                </p>
+                <div className="btn-group d-flex flex-wrap" role="group">
+                  {[
+                    "Strongly Disagree",
+                    "Disagree",
+                    "Neutral",
+                    "Agree",
+                    "Strongly Agree",
+                  ].map((option) => (
+                    <React.Fragment key={option}>
+                      <input
+                        type="radio"
+                        className="btn-check"
+                        name="helpingOthers"
+                        id={`helpingOthers-${option}`}
+                        value={option}
+                        checked={formData.helpingOthers === option}
+                        onChange={handleChange}
+                      />
+                      <label
+                        className="btn btn-outline-primary flex-grow-1"
+                        htmlFor={`helpingOthers-${option}`}
                       >
                         {option}
                       </label>

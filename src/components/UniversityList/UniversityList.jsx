@@ -43,7 +43,6 @@ const UniversityList = ({
     <>
       <div
         className="university-card container p-4 rounded shadow-lg bg-light"
-        onClick={handleShowModal}
         style={{
           cursor: "pointer",
           transition: "0.3s",
@@ -55,7 +54,7 @@ const UniversityList = ({
           <div>
             <i
               className={`bi ${
-                isBookmarked ? "bi-bookmark-fill text-warning" : "bi-bookmark"
+                isBookmarked ? "bi-bookmark-fill text-primary" : "bi-bookmark"
               } me-2`}
               onClick={toggleBookmark}
               style={{ cursor: "pointer", fontSize: "1.5rem" }}
@@ -68,7 +67,7 @@ const UniversityList = ({
                 isComparisonDisabled && !isSelectedForComparison
                   ? "text-muted"
                   : ""
-              }`}
+              } me-2`}
               style={{
                 cursor:
                   isComparisonDisabled && !isSelectedForComparison
@@ -82,6 +81,14 @@ const UniversityList = ({
                   ? "Only two universities can be compared at a time"
                   : "Add to comparison"
               }
+            ></i>
+
+            <i
+              class="bi bi-info-circle"
+              style={{
+                fontSize: "1.2rem",
+              }}
+              onClick={handleShowModal}
             ></i>
           </div>
         </div>
