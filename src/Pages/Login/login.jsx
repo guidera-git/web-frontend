@@ -1,15 +1,40 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./Login.css";
 
 function Login() {
   const navigate = useNavigate();
 
-  const handleLogin = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
 
-    navigate("/");
+  const handleLogin = async () => {
+    try {
+      const response = await axios.post("http://localhost:3000/api/login", {
+        email,
+        password,
+      });
+
+      // If login is successful, redirect
+      if (response.data && response.data.token) {
+        localStorage.setItem("token", response.data.token);
+        navigate("/");
+      } else {
+        setErrorMsg("Unexpected response from server.");
+      }
+    } catch (error) {
+      console.log(error); // log error to debug
+      if (error.response && error.response.status === 401) {
+        setErrorMsg("Incorrect email or password.");
+      } else {
+        setErrorMsg("Something went wrong. Please try again.");
+      }
+    }
   };
+
 
   return (
     <div className="custom-container min-vh-100 d-flex align-items-center justify-content-center">
@@ -24,18 +49,10 @@ function Login() {
             />
             <h2 className="p-1">Welcome Back</h2>
             <h3 className="p-1">Log into your Account</h3>
-            <button className="btn google-btn mb-3 d-flex align-items-center justify-content-center">
-              <img
-                src="/google.svg"
-                alt="Google Logo"
-                style={{ width: "20px", marginRight: "10px" }}
-              />
-              Continue with Google
-            </button>
 
             <div className="d-flex align-items-center my-3" style={{ width: "55%" }}>
               <hr className="flex-grow-1 text-white" />
-              <span className="mx-2">or with Email</span>
+              <span className="mx-2">with Email</span>
               <hr className="flex-grow-1 text-white" />
             </div>
 
@@ -47,6 +64,8 @@ function Login() {
                 type="email"
                 className="form-control border-0 border-bottom bg-transparent text-white mb-2 rounded-0"
                 placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
 
               <label className="w-100 mb-1">
@@ -56,10 +75,20 @@ function Login() {
                 type="password"
                 className="form-control border-0 border-bottom bg-transparent text-white mb-2 rounded-0"
                 placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
 
+              {errorMsg && (
+                <div className="text-danger mt-2" style={{ fontSize: "14px" }}>
+                  {errorMsg}
+                </div>
+              )}
+
               <div className="mt-1">
-                <a href="#" style={{ color: "#0d6efd" }}>Forgot Password?</a>
+                <a href="#" style={{ color: "#0d6efd" }}>
+                  Forgot Password?
+                </a>
               </div>
             </div>
 
