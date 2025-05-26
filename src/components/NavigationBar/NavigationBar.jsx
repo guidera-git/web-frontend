@@ -1,14 +1,16 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Navbar, Nav, Dropdown, Container } from "react-bootstrap";
 import { ThemeContext } from "../../ThemeContext";
-
+import axios from "axios";
 import "./NavigationBar.css";
 
 function NavigationBar() {
   const { theme, toggleTheme } = useContext(ThemeContext);
   const [activeLink, setActiveLink] = useState("Home");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [profilePicture, setProfilePicture] = useState(null);
 
   const [notifications] = useState([
     "New message from Admin",
@@ -18,6 +20,26 @@ function NavigationBar() {
     "Server maintenance scheduled",
     "Your request has been approved",
   ]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    setIsLoggedIn(!!token);
+
+    if (token) {
+      axios
+        .get("http://localhost:5000/api/profile", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((res) => {
+          if (res.data.profilePicture) {
+            setProfilePicture(res.data.profilePicture);
+          }
+        })
+        .catch((err) => {
+          console.error("Failed to fetch profile data:", err);
+        });
+    }
+  }, []);
 
   return (
     <Navbar
@@ -116,19 +138,34 @@ function NavigationBar() {
               onClick={toggleTheme}
             />
 
-            <Link to="/login">
-              <button type="button" className="btn login-button ms-3">
-                Login
-              </button>
-            </Link>
-            <Link to="/signup">
-              <button
-                type="button"
-                className="sign-up btn btn-light text-primary ms-2"
-              >
-                Signup
-              </button>
-            </Link>
+            {/* Profile / Login-Signup */}
+            {isLoggedIn ? (
+              <Link to="/profile">
+                <img
+                  src={profilePicture || "/blueprint.png"}
+                  alt="Profile"
+                  width="35"
+                  height="35"
+                  style={{ borderRadius: "50%", objectFit: "cover" }}
+                />
+              </Link>
+            ) : (
+              <>
+                <Link to="/login">
+                  <button type="button" className="btn login-button ms-3">
+                    Login
+                  </button>
+                </Link>
+                <Link to="/signup">
+                  <button
+                    type="button"
+                    className="sign-up btn btn-light text-primary ms-2"
+                  >
+                    Signup
+                  </button>
+                </Link>
+              </>
+            )}
           </div>
         </Navbar.Collapse>
       </Container>

@@ -13,20 +13,25 @@ function Login() {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post("http://localhost:3000/api/login", {
-        email,
-        password,
-      });
+      const response = await axios.post(
+        "http://localhost:3000/api/auth/login",
+        {
+          email,
+          password,
+        }
+      );
 
-      // If login is successful, redirect
       if (response.data && response.data.token) {
         localStorage.setItem("token", response.data.token);
+        axios.defaults.headers.common[
+          "Authorization"
+        ] = `Bearer ${response.data.token}`;
         navigate("/");
       } else {
         setErrorMsg("Unexpected response from server.");
       }
     } catch (error) {
-      console.log(error); // log error to debug
+      console.log(error);
       if (error.response && error.response.status === 401) {
         setErrorMsg("Incorrect email or password.");
       } else {
@@ -34,7 +39,6 @@ function Login() {
       }
     }
   };
-
 
   return (
     <div className="custom-container min-vh-100 d-flex align-items-center justify-content-center">
@@ -50,7 +54,10 @@ function Login() {
             <h2 className="p-1">Welcome Back</h2>
             <h3 className="p-1">Log into your Account</h3>
 
-            <div className="d-flex align-items-center my-3" style={{ width: "55%" }}>
+            <div
+              className="d-flex align-items-center my-3"
+              style={{ width: "55%" }}
+            >
               <hr className="flex-grow-1 text-white" />
               <span className="mx-2">with Email</span>
               <hr className="flex-grow-1 text-white" />
@@ -104,7 +111,11 @@ function Login() {
               Don't have an account?{" "}
               <span
                 onClick={() => navigate("/signup")}
-                style={{ color: "#0d6efd", cursor: "pointer", textDecoration: "underline" }}
+                style={{
+                  color: "#0d6efd",
+                  cursor: "pointer",
+                  textDecoration: "underline",
+                }}
               >
                 Sign Up
               </span>

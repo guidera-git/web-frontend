@@ -28,6 +28,7 @@ function Signup() {
       setError("Please fill in all fields");
       return;
     }
+
     if (password !== confirmPassword) {
       setError("Passwords do not match");
       return;
@@ -35,14 +36,16 @@ function Signup() {
 
     try {
       setError("");
-      const res = await axios.post("http://localhost:3000/api/signup", {
+      const res = await axios.post("http://localhost:3000/api/auth/signup", {
         fullName,
         email,
         password,
       });
-      if (res.status === 201) {
-        // Signup successful, redirect to login
-        navigate("/login");
+
+      if (res.status === 201 || res.status === 200) {
+        navigate("/login"); // redirect to login page
+      } else {
+        setError("Unexpected response from server.");
       }
     } catch (err) {
       console.error("Signup error:", err.response?.data || err.message);
