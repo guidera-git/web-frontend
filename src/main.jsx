@@ -1,12 +1,16 @@
-import { StrictMode } from "react";
+import { StrictMode, useEffect } from "react";
 import { createRoot } from "react-dom/client";
-import { RouterProvider, createBrowserRouter } from "react-router-dom";
-import { ThemeProvider } from "./ThemeContext"; // Import ThemeProvider
+import {
+  RouterProvider,
+  createBrowserRouter,
+  useNavigate,
+} from "react-router-dom";
+import { ThemeProvider } from "./ThemeContext";
 import Layout from "./Layout";
 import Home from "./Pages/HomePage/Home";
 import Signup from "./Pages/SignUp/SignUp";
 import AboutUs from "./Pages/AboutUs/AboutUs";
-import Login from "./Pages/Login/Login";
+import Login from "./Pages/Login/login";
 import Chatbot from "./Pages/Chatbot/Chatbot";
 import TestPreparation from "./Pages/TestPreparation/TestPreparation";
 import ContactUs from "./Pages/ContactUs/ContactUs";
@@ -18,10 +22,48 @@ import QuestionBank from "./components/Question/QuestionBank";
 import ProfilePage from "./Pages/Profile/Profile";
 import Form from "./Pages/Form/Form";
 
+// ✅ Token check helper
+function isTokenExpired(token) {
+  try {
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
+    );
+    const { exp } = JSON.parse(jsonPayload);
+    const now = Math.floor(Date.now() / 1000);
+    return exp < now;
+  } catch (e) {
+    return true;
+  }
+}
+
+// ✅ Layout wrapper with logout logic
+function ProtectedLayout({ children }) {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token && isTokenExpired(token)) {
+      localStorage.removeItem("token");
+      navigate("/login");
+    }
+  }, []);
+
+  return children;
+}
+
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Layout />,
+    element: (
+      <ProtectedLayout>
+        <Layout />
+      </ProtectedLayout>
+    ),
     children: [
       { path: "/", element: <Home /> },
       { path: "/chatbot", element: <Chatbot /> },

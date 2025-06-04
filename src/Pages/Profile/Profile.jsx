@@ -1,135 +1,229 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const ProfilePage = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState({
-    name: "John Doe",
-    email: "john.doe@example.com",
-    gender: "Male",
-    birthday: "1990-05-15",
-    about:
-      "A passionate developer who loves building web applications with React and Bootstrap.",
-    profileImage: "https://randomuser.me/api/portraits/men/1.jpg",
-  });
-  const [age, setAge] = useState(0);
+  const [profile, setProfile] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState({ ...user });
-  const [imagePreview, setImagePreview] = useState(user.profileImage);
+  const [editForm, setEditForm] = useState({
+    fullname: "",
+    email: "",
+    gender: "",
+    birthdate: "",
+    aboutme: "",
+    profilephoto: "blueprint.png",
+  });
+  const [imagePreview, setImagePreview] = useState("blueprint.png");
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Calculate age from birthday
+  const calculateAge = (birthdate) => {
+    if (!birthdate) return null;
+    const birth = new Date(birthdate);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    return age;
+  };
+
   useEffect(() => {
-    const calculateAge = (birthday) => {
-      const birthDate = new Date(birthday);
-      const today = new Date();
-      let age = today.getFullYear() - birthDate.getFullYear();
-      const monthDiff = today.getMonth() - birthDate.getMonth();
+    const fetchProfile = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return navigate("/login");
 
-      if (
-        monthDiff < 0 ||
-        (monthDiff === 0 && today.getDate() < birthDate.getDate())
-      ) {
-        age--;
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/api/user/profile",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        const apiData = response.data || {};
+        const safeProfile = {
+          fullname: apiData.fullname || "New User",
+          email: apiData.email || "No email",
+          gender: apiData.gender || "Not specified",
+          birthdate: apiData.birthdate || "",
+          aboutme: apiData.aboutme || "",
+          profilephoto: apiData.profilephoto || "blueprint.png",
+        };
+
+        setProfile(safeProfile);
+        setEditForm(safeProfile);
+        setImagePreview(safeProfile.profilephoto);
+      } catch (err) {
+        console.error("Fetch error:", err);
+        setError("Unable to load profile. You can still edit.");
+        const fallbackProfile = {
+          fullname: "User",
+          email: localStorage.getItem("userEmail") || "No email",
+          gender: "Not specified",
+          birthdate: "",
+          aboutme: "",
+          profilephoto: "blueprint.png",
+        };
+        setProfile(fallbackProfile);
+        setEditForm(fallbackProfile);
+        setImagePreview(fallbackProfile.profilephoto);
+      } finally {
+        setLoading(false);
       }
-      return age;
     };
 
-    setAge(calculateAge(user.birthday));
-  }, [user.birthday]);
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-        setEditForm({ ...editForm, profileImage: reader.result });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleRemoveImage = () => {
-    setImagePreview("https://via.placeholder.com/150");
-    setEditForm({
-      ...editForm,
-      profileImage: "https://via.placeholder.com/150",
-    });
-  };
+    fetchProfile();
+  }, [navigate]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setEditForm({ ...editForm, [name]: value });
+    setEditForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSave = () => {
-    setUser(editForm);
-    setIsEditing(false);
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result);
+      setEditForm((prev) => ({ ...prev, profilephoto: reader.result }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveImage = () => {
+    setImagePreview("blueprint.png");
+    setEditForm((prev) => ({ ...prev, profilephoto: "blueprint.png" }));
+  };
+
+  const handleSave = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return navigate("/login");
+
+    try {
+      const updateData = {
+        fullname: editForm.fullname,
+        email: editForm.email,
+        gender: editForm.gender,
+        birthdate: editForm.birthdate,
+        aboutme: editForm.aboutme,
+      };
+
+      await axios.patch("http://localhost:3000/api/user/profile", updateData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (editForm.profilephoto.startsWith("data:")) {
+        const formData = new FormData();
+        const blob = await fetch(editForm.profilephoto).then((r) => r.blob());
+        formData.append("profilephoto", blob, "profile.jpg");
+
+        await axios.patch(
+          "http://localhost:3000/api/user/profile/photo",
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+      }
+
+      const { data } = await axios.get(
+        "http://localhost:3000/api/user/profile",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      setProfile(data);
+      setEditForm(data);
+      setImagePreview(data.profilephoto);
+      setIsEditing(false);
+      setError(null);
+    } catch (err) {
+      console.error("Save error:", err);
+      setError(err.response?.data?.error || "Profile update failed.");
+    }
   };
 
   const handleCancel = () => {
-    setEditForm({ ...user });
-    setImagePreview(user.profileImage);
+    if (!profile) return;
+    setEditForm(profile);
+    setImagePreview(profile.profilephoto);
     setIsEditing(false);
-  };
-
-  const handleLogoutClick = () => {
-    setShowLogoutModal(true);
+    setError(null);
   };
 
   const confirmLogout = () => {
-    // Add your actual logout logic here (clear tokens, etc.)
+    localStorage.removeItem("token");
     navigate("/login");
   };
 
+  if (loading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center vh-100">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
+  const age = calculateAge(profile?.birthdate);
+
   return (
     <div className="container py-5">
-      {/* Logout Confirmation Modal */}
-      <div
-        className={`modal fade ${showLogoutModal ? "show d-block" : ""}`}
-        tabIndex="-1"
-        style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
-      >
-        <div className="modal-dialog modal-dialog-centered">
-          <div className="modal-content">
-            <div className="modal-header text-danger">
-              <h5 className="modal-title">Confirm Logout</h5>
-              <button
-                type="button"
-                className="btn-close"
-                onClick={() => setShowLogoutModal(false)}
-              ></button>
-            </div>
-            <div className="modal-body text-dark">
-              <p>Are you sure you want to logout?</p>
-            </div>
-            <div className="modal-footer">
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={() => setShowLogoutModal(false)}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="btn btn-danger"
-                onClick={confirmLogout}
-              >
-                Logout
-              </button>
+      {/* Logout Modal */}
+      {showLogoutModal && (
+        <div
+          className="modal fade show d-block"
+          tabIndex="-1"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content">
+              <div className="modal-header text-danger">
+                <h5 className="modal-title">Confirm Logout</h5>
+                <button
+                  className="btn-close"
+                  onClick={() => setShowLogoutModal(false)}
+                ></button>
+              </div>
+              <div className="modal-body text-dark">
+                <p>Are you sure you want to logout?</p>
+              </div>
+              <div className="modal-footer">
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => setShowLogoutModal(false)}
+                >
+                  Cancel
+                </button>
+                <button className="btn btn-danger" onClick={confirmLogout}>
+                  Logout
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {error && (
+        <div className="alert alert-danger alert-dismissible fade show mb-4">
+          {error}
+          <button className="btn-close" onClick={() => setError(null)}></button>
+        </div>
+      )}
 
       <div className="row justify-content-center">
         <div className="col-lg-8">
           <div className="card shadow">
             <div className="card-body p-4" style={{ background: "#F8F8F8" }}>
-              {/* Profile Header */}
               <div className="text-center mb-4">
                 <div className="position-relative d-inline-block">
                   <img
@@ -141,6 +235,7 @@ const ProfilePage = () => {
                       height: "150px",
                       objectFit: "cover",
                     }}
+                    onError={(e) => (e.target.src = "blueprint.png")}
                   />
                   {isEditing && (
                     <div className="position-absolute bottom-0 end-0">
@@ -165,146 +260,106 @@ const ProfilePage = () => {
                 {isEditing ? (
                   <input
                     type="text"
-                    name="name"
-                    value={editForm.name}
+                    name="fullname"
+                    value={editForm.fullname}
                     onChange={handleInputChange}
                     className="form-control text-center mt-3 fw-bold fs-3 border-0 border-bottom"
+                    placeholder="Enter your name"
                   />
                 ) : (
-                  <h2 className="mt-3 fw-bold">{user.name}</h2>
+                  <h2 className="mt-3 fw-bold">{profile.fullname}</h2>
                 )}
               </div>
 
-              {/* Profile Details */}
-              <div className="row g-3 mb-4">
+              {/* Profile details */}
+              <div className="row g-3 mb-3">
                 <div className="col-md-6">
-                  <div className="card h-100 border-0 shadow-sm">
-                    <div
-                      className="card-body"
-                      style={{ background: "#F0F0F0" }}
-                    >
-                      <h5 className="card-title text-muted">Email</h5>
-                      {isEditing ? (
-                        <input
-                          type="email"
-                          name="email"
-                          value={editForm.email}
-                          onChange={handleInputChange}
-                          className="form-control"
-                        />
-                      ) : (
-                        <p className="card-text fs-5">{user.email}</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <div className="col-md-6">
-                  <div className="card h-100 border-0 shadow-sm">
-                    <div
-                      className="card-body"
-                      style={{ background: "#F0F0F0" }}
-                    >
-                      <h5 className="card-title text-muted">Gender</h5>
-                      {isEditing ? (
-                        <select
-                          name="gender"
-                          value={editForm.gender}
-                          onChange={handleInputChange}
-                          className="form-select"
-                        >
-                          <option value="Male">Male</option>
-                          <option value="Female">Female</option>
-                          <option value="Other">Other</option>
-                        </select>
-                      ) : (
-                        <p className="card-text fs-5">{user.gender}</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <div className="col-md-6">
-                  <div className="card h-100 border-0 shadow-sm">
-                    <div
-                      className="card-body"
-                      style={{ background: "#F0F0F0" }}
-                    >
-                      <h5 className="card-title text-muted">Birthday</h5>
-                      {isEditing ? (
-                        <input
-                          type="date"
-                          name="birthday"
-                          value={editForm.birthday}
-                          onChange={handleInputChange}
-                          className="form-control"
-                        />
-                      ) : (
-                        <p className="card-text fs-5">
-                          {new Date(user.birthday).toLocaleDateString()} (Age:{" "}
-                          {age})
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <div className="col-md-6">
-                  <div className="card h-100 border-0 shadow-sm">
-                    <div
-                      className="card-body"
-                      style={{ background: "#F0F0F0" }}
-                    >
-                      <h5 className="card-title text-muted">Age</h5>
-                      <p className="card-text fs-5">{age} years</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* About Me Section */}
-              <div className="mb-4 p-3" style={{ background: "#F0F0F0" }}>
-                <h4 className="text-muted mb-3">About Me</h4>
-                {isEditing ? (
-                  <textarea
-                    name="about"
-                    value={editForm.about}
-                    onChange={handleInputChange}
+                  <label>Email</label>
+                  <input
+                    type="email"
+                    name="email"
                     className="form-control"
-                    rows="4"
+                    value={editForm.email}
+                    disabled={!isEditing}
+                    onChange={handleInputChange}
                   />
-                ) : (
-                  <p className="lead">{user.about}</p>
-                )}
+                </div>
+                <div className="col-md-6">
+                  <label>Gender</label>
+                  <select
+                    name="gender"
+                    className="form-select"
+                    disabled={!isEditing}
+                    value={editForm.gender}
+                    onChange={handleInputChange}
+                  >
+                    <option>Other</option>
+                    <option>Female</option>
+                    <option>Male</option>
+                  </select>
+                </div>
+                <div className="col-md-6">
+                  <label>Birthdate</label>
+                  <input
+                    type="date"
+                    name="birthdate"
+                    className="form-control"
+                    value={editForm.birthdate?.slice(0, 10)}
+                    disabled={!isEditing}
+                    onChange={handleInputChange}
+                  />
+                </div>
+                <div className="col-md-6">
+                  <label>Age</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={age ? `${age} years` : "N/A"}
+                    disabled
+                  />
+                </div>
+                <div className="col-12">
+                  <label>About Me</label>
+                  <textarea
+                    name="aboutme"
+                    className="form-control"
+                    rows="3"
+                    value={editForm.aboutme}
+                    disabled={!isEditing}
+                    onChange={handleInputChange}
+                  />
+                </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="d-flex justify-content-between">
+              <div className="text-end">
                 {isEditing ? (
                   <>
                     <button
-                      className="btn btn-success px-4"
+                      className="btn btn-success me-2"
                       onClick={handleSave}
                     >
-                      <i className="bi bi-check-circle me-2"></i>Save Changes
+                      Save
                     </button>
                     <button
-                      className="btn btn-outline-secondary px-4"
+                      className="btn btn-secondary"
                       onClick={handleCancel}
                     >
-                      <i className="bi bi-x-circle me-2"></i>Cancel
+                      Cancel
                     </button>
                   </>
                 ) : (
                   <>
                     <button
-                      className="btn btn-primary px-4"
+                      className="btn btn-primary me-2"
                       onClick={() => setIsEditing(true)}
                     >
-                      <i className="bi bi-pencil-square me-2"></i>Edit Details
+                      Edit Profile
                     </button>
                     <button
-                      className="btn btn-outline-danger px-4"
-                      onClick={handleLogoutClick}
+                      className="btn btn-outline-danger"
+                      onClick={() => setShowLogoutModal(true)}
                     >
-                      <i className="bi bi-box-arrow-right me-2"></i>Log Out
+                      Logout
                     </button>
                   </>
                 )}

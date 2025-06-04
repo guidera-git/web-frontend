@@ -9,8 +9,9 @@ function SubjectCard() {
     { title: "Biology", icon: "/person_cat.jpg", color: "#ffffff" },
     { title: "Physics", icon: "/Analytics.png", color: "#0d6efd" },
     { title: "Chemistry", icon: "/person_cat.jpg", color: "#ffffff" },
-    { title: "Computer", icon: "/Analytics.png", color: "#0d6efd" },
+    { title: "MATH", icon: "/Analytics.png", color: "#0d6efd" },
     { title: "English", icon: "/person_cat.jpg", color: "#ffffff" },
+    { title: "Analytical_Reasoning", icon: "Analytics.png", color: "#0d6efd" },
   ];
 
   const [index, setIndex] = useState(0);

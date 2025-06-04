@@ -3,8 +3,6 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./FindUniversity.css";
 import { ThemeContext } from "../../ThemeContext";
 import React, { useContext, useState } from "react";
-
-import NavigationBar from "../../components/NavigationBar/NavigationBar";
 import UniversityList from "../../components/UniversityList/UniversityList";
 import ComparisonModal from "../../components/Comparison/ComparisonModal";
 import { useNavigate } from "react-router-dom";
@@ -72,44 +70,7 @@ const universities = [
     location: "Lahore",
     rating: 4.5,
   },
-  {
-    name: "UCP",
-    degree: "BSSE",
-    duration: "8 Semesters",
-    beginning: "Summer 2025",
-    tuition: "180000 PKR",
-    location: "Islamabad",
-    rating: 4.5,
-  },
-  {
-    name: "LUMS",
-    degree: "BBA",
-    duration: "8 Semester",
-    beginning: "Fall 2025",
-    tuition: "300000 PKR",
-    location: "Lahore",
-    rating: 5,
-  },
-  {
-    name: "UCP",
-    degree: "BSSE",
-    duration: "8 Semesters",
-    beginning: "Summer 2025",
-    tuition: "180000 PKR",
-    location: "Lahore",
-    rating: 4.5,
-  },
-  {
-    name: "LUMS",
-    degree: "BBA",
-    duration: "8 Semester",
-    beginning: "Fall 2025",
-    tuition: "300000 PKR",
-    location: "Lahore",
-    rating: 5,
-  },
 ];
-
 function FindUniversity() {
   const [selectedForComparison, setSelectedForComparison] = useState([]);
   const [isComparisonCleared, setIsComparisonCleared] = useState(false);
@@ -149,10 +110,65 @@ function FindUniversity() {
   );
 }
 function Section1() {
-  const navigate = useNavigate(); // Hook for navigation
+  const navigate = useNavigate();
+  const [showConfirmation, setShowConfirmation] = useState(false);
+
+  const handleRecommendationClick = () => {
+    setShowConfirmation(true);
+  };
+
+  const handleContinue = () => {
+    setShowConfirmation(false);
+    navigate("/Form");
+  };
+
+  const handleGoBack = () => {
+    setShowConfirmation(false);
+  };
 
   return (
     <div className="custom-container text-white container border-bottom border-2 border-primary">
+      {showConfirmation && (
+        <div
+          className="modal-backdrop"
+          style={{
+            position: "fixed",
+            top: 0,
+            eft: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            zIndex: 1040,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <div
+            className="modal-content bg-dark p-4 rounded"
+            style={{
+              maxWidth: "500px",
+              width: "90%",
+              border: "1px solid #0d6efd",
+            }}
+          >
+            <h4 className="text-primary mb-3">Before we continue...</h4>
+            <p>We need some information to give you the best recommendation.</p>
+            <div className="d-flex justify-content-center gap-3 mt-4">
+              <button
+                className="btn btn-outline-secondary"
+                onClick={handleGoBack}
+              >
+                Go Back
+              </button>
+              <button className="btn btn-primary" onClick={handleContinue}>
+                Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="row min-vh-20">
         <div className="col-md-8 d-flex flex-column justify-content-center align-items-center p-5">
           <h2>
@@ -167,9 +183,9 @@ function Section1() {
             <button className="btn btn-primary">Start Your Search</button>
             <button
               className="btn sign-up btn-outline-secondary"
-              onClick={() => navigate("/recommendation")} // Navigate to recommendation page
+              onClick={handleRecommendationClick}
             >
-              Explore Recommendation
+              Recommendation Me
             </button>
           </div>
         </div>

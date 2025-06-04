@@ -1,24 +1,28 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const Form = () => {
-  const [activeSection, setActiveSection] = useState("personal");
-  const [formData, setFormData] = useState({
-    // Personal section
-    fullName: "",
-    email: "",
-    aboutMe: "",
-    dateOfBirth: "",
-    gender: "",
-    location: "",
+  const navigate = useNavigate();
+  const [activeSection, setActiveSection] = useState("academic");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+  const [predictionResult, setPredictionResult] = useState(null);
+  const [isFormValid, setIsFormValid] = useState(false);
 
-    // Academic section
-    studentType: "",
+  // Grade mapping for O/A-Level
+  const grade_mapping = { "A*": 95, A: 85, B: 75, C: 65, D: 55, E: 45 };
+
+  // Form state
+  const [formData, setFormData] = useState({
+    studentType: "Board",
     matriculationMarks: "",
     intermediateMarks: "",
+    oLevelGrade: "",
+    aLevelGrade: "",
+    gender: "",
     studyStream: "",
-
-    // Personality section
     analysisEnjoyment: "",
     logicalTasks: "",
     explainingAbility: "",
@@ -29,19 +33,196 @@ const Form = () => {
     projectPreference: "",
   });
 
+  // Check form validity whenever formData changes
+  useEffect(() => {
+    const checkValidity = () => {
+      if (activeSection === "academic") {
+        if (formData.studentType === "Board") {
+          return (
+            formData.gender &&
+            formData.matriculationMarks &&
+            formData.intermediateMarks &&
+            formData.studyStream
+          );
+        } else {
+          return (
+            formData.gender &&
+            formData.oLevelGrade &&
+            formData.aLevelGrade &&
+            formData.studyStream
+          );
+        }
+      } else {
+        return (
+          formData.analysisEnjoyment &&
+          formData.logicalTasks &&
+          formData.explainingAbility &&
+          formData.innovativeIdeas &&
+          formData.attentionToDetail &&
+          formData.helpingOthers &&
+          formData.excitingActivity &&
+          formData.projectPreference
+        );
+      }
+    };
+    setIsFormValid(checkValidity());
+  }, [formData, activeSection]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Form submitted:", formData);
-    // Add form submission logic here
+  const calculatePercentage = () => {
+    if (formData.studentType === "Board") {
+      const matric = parseFloat(formData.matriculationMarks) || 0;
+      const inter = parseFloat(formData.intermediateMarks) || 0;
+      return ((matric + inter) / 2200) * 100;
+    } else {
+      const oLevelScore = grade_mapping[formData.oLevelGrade] || 0;
+      const aLevelScore = grade_mapping[formData.aLevelGrade] || 0;
+      return (oLevelScore + aLevelScore) / 2;
+    }
   };
+
+  const mapResponseToNumber = (response) => {
+    const map = {
+      "Strongly Disagree": 1,
+      Disagree: 2,
+      Neutral: 3,
+      Agree: 4,
+      "Strongly Agree": 5,
+    };
+    return map[response] || 3;
+  };
+
+  const mapPreferenceToNumber = (preference, options) => {
+    return options.indexOf(preference) + 1;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!isFormValid) return;
+
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("Authentication required");
+
+      const requestData = {
+        Gender: formData.gender === "Male" ? 1 : 0,
+        "Academic Percentage": calculatePercentage(),
+        "Study Stream": formData.studyStream,
+        Analytical: mapResponseToNumber(formData.analysisEnjoyment),
+        Logical: mapResponseToNumber(formData.logicalTasks),
+        Explaining: mapResponseToNumber(formData.explainingAbility),
+        Creative: mapResponseToNumber(formData.innovativeIdeas),
+        "Detail-Oriented": mapResponseToNumber(formData.attentionToDetail),
+        Helping: mapResponseToNumber(formData.helpingOthers),
+        "Activity Preference": mapPreferenceToNumber(
+          formData.excitingActivity,
+          [
+            "Analyzing data to make predictions",
+            "Designing and building systems",
+            "Understanding and improving human health",
+          ]
+        ),
+        "Project Preference": mapPreferenceToNumber(
+          formData.projectPreference,
+          [
+            "Developing innovative software solutions",
+            "Researching solutions for medical issues",
+            "Designing a new mechanical or electrical system",
+          ]
+        ),
+      };
+
+      const response = await axios.post(
+        "http://localhost:3000/api/degree/predict",
+        requestData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      setPredictionResult(response.data);
+    } catch (err) {
+      setError(
+        err.response?.data?.message || err.message || "Submission failed"
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const radioOptions = [
+    "Strongly Disagree",
+    "Disagree",
+    "Neutral",
+    "Agree",
+    "Strongly Agree",
+  ];
+
+  const renderRadioGroup = (name, question) => (
+    <div className="mb-4">
+      <p className="fw-bold">{question}</p>
+      <div className="btn-group d-flex flex-wrap" role="group">
+        {radioOptions.map((option) => (
+          <React.Fragment key={option}>
+            <input
+              type="radio"
+              className="btn-check"
+              name={name}
+              id={`${name}-${option}`}
+              value={option}
+              checked={formData[name] === option}
+              onChange={handleChange}
+              required
+            />
+            <label
+              className="btn btn-outline-primary flex-grow-1"
+              htmlFor={`${name}-${option}`}
+            >
+              {option}
+            </label>
+          </React.Fragment>
+        ))}
+      </div>
+    </div>
+  );
+
+  if (predictionResult) {
+    return (
+      <div className="container py-4 text-center">
+        <h2 className="text-primary mb-4">Degree Recommendation</h2>
+        <div className="card mx-auto" style={{ maxWidth: "600px" }}>
+          <div className="card-header bg-primary text-white">
+            <h3>Your Ideal Degree</h3>
+          </div>
+          <div className="card-body">
+            <h4 className="text-success">
+              {predictionResult.predicted_degree}
+            </h4>
+            <p>
+              Confidence: {(predictionResult.confidence_score * 100).toFixed(1)}
+              %
+            </p>
+            <button
+              className="btn btn-primary mt-3"
+              onClick={() => setPredictionResult(null)}
+            >
+              Back to Form
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container py-4">
@@ -49,115 +230,48 @@ const Form = () => {
         Guidera
       </h1>
 
-      {/* Progress Navigation */}
+      {error && <div className="alert alert-danger">{error}</div>}
+
       <div className="d-flex justify-content-center mb-4">
-        <button
-          className={`btn ${
-            activeSection === "personal" ? "btn-primary" : "btn-outline-primary"
-          } mx-2`}
-          onClick={() => setActiveSection("personal")}
-        >
-          Personal
-        </button>
-        <button
-          className={`btn ${
-            activeSection === "academic" ? "btn-primary" : "btn-outline-primary"
-          } mx-2`}
-          onClick={() => setActiveSection("academic")}
-        >
-          Academic
-        </button>
-        <button
-          className={`btn ${
-            activeSection === "personality"
-              ? "btn-primary"
-              : "btn-outline-primary"
-          } mx-2`}
-          onClick={() => setActiveSection("personality")}
-        >
-          Personality
-        </button>
+        {["academic", "personality"].map((section) => (
+          <button
+            key={section}
+            className={`btn ${
+              activeSection === section ? "btn-primary" : "btn-outline-primary"
+            } mx-2`}
+            onClick={() => setActiveSection(section)}
+          >
+            {section.charAt(0).toUpperCase() + section.slice(1)}
+          </button>
+        ))}
       </div>
 
       <form onSubmit={handleSubmit}>
-        {/* Personal Section */}
-        {activeSection === "personal" && (
+        {activeSection === "academic" && (
           <div className="card mb-4 border-primary border-2">
             <div className="card-header bg-primary text-white">
-              <h3>Personal Information</h3>
+              <h3>Academic Information</h3>
             </div>
             <div
-              className="card-body text-white"
-              style={{ background: "#222222" }}
+              className="card-body"
+              style={{ background: "#222222", color: "white" }}
             >
+              {/* Gender Field */}
               <div className="mb-3">
-                <label className="form-label">Full Name</label>
-                <input
-                  type="text"
-                  className="form-control text-white"
-                  name="fullName"
-                  value={formData.fullName}
-                  onChange={handleChange}
-                  required
-                  style={{ background: "#918e8e" }}
-                />
-              </div>
-
-              <div className="mb-3">
-                <label className="form-label">Email</label>
-                <input
-                  type="email"
-                  className="form-control text-white"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  style={{ background: "#918e8e" }}
-                />
-              </div>
-
-              <div className="mb-3">
-                <label className="form-label">About Me</label>
-                <textarea
-                  className="form-control text-white"
-                  rows="3"
-                  name="aboutMe"
-                  value={formData.aboutMe}
-                  onChange={handleChange}
-                  maxLength="200"
-                  style={{ background: "#918e8e" }}
-                ></textarea>
-                <small className="text-muted">
-                  {formData.aboutMe.length}/200
-                </small>
-              </div>
-
-              <div className="mb-3">
-                <label className="form-label">Date of Birth</label>
-                <input
-                  type="date"
-                  className="form-control text-white"
-                  name="dateOfBirth"
-                  value={formData.dateOfBirth}
-                  onChange={handleChange}
-                  style={{ background: "#918e8e" }}
-                />
-              </div>
-
-              <div className="mb-3">
-                <label className="form-label">Gender</label>
+                <label className="form-label">Gender*</label>
                 <div>
                   <div className="form-check form-check-inline">
                     <input
-                      className="form-check-input text-white"
+                      className="form-check-input"
                       type="radio"
                       name="gender"
-                      id="male"
+                      id="gender-male"
                       value="Male"
                       checked={formData.gender === "Male"}
                       onChange={handleChange}
+                      required
                     />
-                    <label className="form-check-label" htmlFor="male">
+                    <label className="form-check-label" htmlFor="gender-male">
                       Male
                     </label>
                   </div>
@@ -166,428 +280,263 @@ const Form = () => {
                       className="form-check-input"
                       type="radio"
                       name="gender"
-                      id="female"
+                      id="gender-female"
                       value="Female"
                       checked={formData.gender === "Female"}
                       onChange={handleChange}
+                      required
                     />
-                    <label className="form-check-label" htmlFor="female">
+                    <label className="form-check-label" htmlFor="gender-female">
                       Female
-                    </label>
-                  </div>
-                  <div className="form-check form-check-inline">
-                    <input
-                      className="form-check-input"
-                      type="radio"
-                      name="gender"
-                      id="other"
-                      value="Other"
-                      checked={formData.gender === "Other"}
-                      onChange={handleChange}
-                    />
-                    <label className="form-check-label" htmlFor="other">
-                      Other
                     </label>
                   </div>
                 </div>
               </div>
 
+              {/* Student Type */}
               <div className="mb-3">
-                <label className="form-label">Location</label>
-                <input
-                  type="text"
-                  className="form-control text-white"
-                  name="location"
-                  value={formData.location}
-                  onChange={handleChange}
-                  style={{ background: "#918e8e" }}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Academic Section */}
-        {activeSection === "academic" && (
-          <div className="card mb-4 border-primary border-2">
-            <div className="card-header bg-primary text-white">
-              <h3>Academic Information</h3>
-            </div>
-            <div
-              className="card-body text-white"
-              style={{ background: "#222222" }}
-            >
-              <div className="mb-3">
-                <label className="form-label">Student Type</label>
+                <label className="form-label">Student Type*</label>
                 <select
-                  className="form-select text-white"
+                  className="form-select"
                   name="studentType"
                   value={formData.studentType}
                   onChange={handleChange}
-                  style={{ background: "#918e8e" }}
+                  required
                 >
-                  <option value="">Select student type</option>
-                  <option value="Board">Board</option>
-                  <option value="O/A Level">O/A level</option>
+                  <option value="Board">Matric/FSc (Board)</option>
+                  <option value="O/A Level">O/A Level</option>
                 </select>
               </div>
-              <div className="mb-3">
-                <label className="form-label">Matriculation Marks</label>
-                <input
-                  type="text"
-                  className="form-control text-white"
-                  name="matriculationMarks"
-                  value={formData.matriculationMarks}
-                  onChange={handleChange}
-                  style={{ background: "#918e8e" }}
-                />
-              </div>
 
-              <div className="mb-3">
-                <label className="form-label">Intermediate Marks</label>
-                <input
-                  type="text"
-                  className="form-control text-white"
-                  name="intermediateMarks"
-                  value={formData.intermediateMarks}
-                  onChange={handleChange}
-                  style={{ background: "#918e8e" }}
-                />
-              </div>
+              {/* Conditional Fields */}
+              {formData.studentType === "Board" ? (
+                <>
+                  <div className="mb-3">
+                    <label className="form-label">
+                      Matriculation Marks (out of 1100)*
+                    </label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      name="matriculationMarks"
+                      value={formData.matriculationMarks}
+                      onChange={handleChange}
+                      min="0"
+                      max="1100"
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">
+                      Intermediate Marks (out of 1100)*
+                    </label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      name="intermediateMarks"
+                      value={formData.intermediateMarks}
+                      onChange={handleChange}
+                      min="0"
+                      max="1100"
+                      required
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="mb-3">
+                    <label className="form-label">O-Level Grade*</label>
+                    <select
+                      className="form-select"
+                      name="oLevelGrade"
+                      value={formData.oLevelGrade}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value="">Select grade</option>
+                      {Object.keys(grade_mapping).map((grade) => (
+                        <option key={grade} value={grade}>
+                          {grade}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">A-Level Grade*</label>
+                    <select
+                      className="form-select"
+                      name="aLevelGrade"
+                      value={formData.aLevelGrade}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value="">Select grade</option>
+                      {Object.keys(grade_mapping).map((grade) => (
+                        <option key={grade} value={grade}>
+                          {grade}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </>
+              )}
 
+              {/* Study Stream */}
               <div className="mb-3">
-                <label className="form-label">Study Stream</label>
+                <label className="form-label">Study Stream*</label>
                 <select
-                  className="form-select text-white"
+                  className="form-select"
                   name="studyStream"
                   value={formData.studyStream}
                   onChange={handleChange}
-                  style={{ background: "#918e8e" }}
+                  required
                 >
                   <option value="">Select your stream</option>
-                  <option value="Biology">Biology</option>
-                  <option value="Computer">Computer</option>
-                  <option value="Arts">Arts</option>
+                  <option value="Pre-Medical">Pre-Medical</option>
+                  <option value="Computer Science">Computer Science</option>
+                  <option value="Pre-Engineering">Pre-Engineering</option>
                 </select>
               </div>
             </div>
           </div>
         )}
 
-        {/* Personality Section */}
         {activeSection === "personality" && (
           <div className="card mb-4 border-primary border-2">
             <div className="card-header bg-primary text-white">
               <h3>Personality Assessment</h3>
             </div>
             <div
-              className="card-body text-white"
-              style={{ background: "#222222" }}
+              className="card-body"
+              style={{ background: "#222222", color: "white" }}
             >
+              {renderRadioGroup(
+                "analysisEnjoyment",
+                "I enjoy analyzing data and identifying patterns to solve problems."
+              )}
+              {renderRadioGroup(
+                "logicalTasks",
+                "I prefer tasks that require logical thinking and structured solutions."
+              )}
+              {renderRadioGroup(
+                "explainingAbility",
+                "I can explain complex topics to others in an engaging way."
+              )}
+              {renderRadioGroup(
+                "innovativeIdeas",
+                "I enjoy brainstorming innovative ideas to solve challenges."
+              )}
+              {renderRadioGroup(
+                "attentionToDetail",
+                "I pay close attention to details to ensure accuracy in my work."
+              )}
+              {renderRadioGroup(
+                "helpingOthers",
+                "I feel fulfilled when helping others overcome challenges."
+              )}
+
               <div className="mb-4">
-                <p className="fw-bold">
-                  I enjoy analyzing data and identifying patterns to solve
-                  problems.
-                </p>
-                <div className="btn-group d-flex flex-wrap" role="group">
-                  {[
-                    "Strongly Disagree",
-                    "Disagree",
-                    "Neutral",
-                    "Agree",
-                    "Strongly Agree",
-                  ].map((option) => (
-                    <React.Fragment key={option}>
-                      <input
-                        type="radio"
-                        className="btn-check"
-                        name="analysisEnjoyment"
-                        id={`analysisEnjoyment-${option}`}
-                        value={option}
-                        checked={formData.analysisEnjoyment === option}
-                        onChange={handleChange}
-                      />
-                      <label
-                        className="btn btn-outline-primary flex-grow-1"
-                        htmlFor={`analysisEnjoyment-${option}`}
-                      >
-                        {option}
-                      </label>
-                    </React.Fragment>
-                  ))}
-                </div>
+                <p className="fw-bold">Which activity excites you the most?*</p>
+                {[
+                  "Analyzing data to make predictions",
+                  "Designing and building systems",
+                  "Understanding and improving human health",
+                ].map((option) => (
+                  <div key={option} className="form-check">
+                    <input
+                      className="form-check-input"
+                      type="radio"
+                      name="excitingActivity"
+                      id={`excitingActivity-${option}`}
+                      value={option}
+                      checked={formData.excitingActivity === option}
+                      onChange={handleChange}
+                      required
+                    />
+                    <label
+                      className="form-check-label"
+                      htmlFor={`excitingActivity-${option}`}
+                    >
+                      {option}
+                    </label>
+                  </div>
+                ))}
               </div>
 
               <div className="mb-4">
                 <p className="fw-bold">
-                  I prefer tasks that require logical thinking and structured
-                  solutions.
+                  Which type of project would you prefer?*
                 </p>
-                <div className="btn-group d-flex flex-wrap" role="group">
-                  {[
-                    "Strongly Disagree",
-                    "Disagree",
-                    "Neutral",
-                    "Agree",
-                    "Strongly Agree",
-                  ].map((option) => (
-                    <React.Fragment key={option}>
-                      <input
-                        type="radio"
-                        className="btn-check"
-                        name="logicalTasks"
-                        id={`logicalTasks-${option}`}
-                        value={option}
-                        checked={formData.logicalTasks === option}
-                        onChange={handleChange}
-                      />
-                      <label
-                        className="btn btn-outline-primary flex-grow-1"
-                        htmlFor={`logicalTasks-${option}`}
-                      >
-                        {option}
-                      </label>
-                    </React.Fragment>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mb-4">
-                <p className="fw-bold">
-                  I can explain complex topics to others in an engaging way.
-                </p>
-                <div className="btn-group d-flex flex-wrap" role="group">
-                  {[
-                    "Strongly Disagree",
-                    "Disagree",
-                    "Neutral",
-                    "Agree",
-                    "Strongly Agree",
-                  ].map((option) => (
-                    <React.Fragment key={option}>
-                      <input
-                        type="radio"
-                        className="btn-check"
-                        name="explainingAbility"
-                        id={`explainingAbility-${option}`}
-                        value={option}
-                        checked={formData.explainingAbility === option}
-                        onChange={handleChange}
-                      />
-                      <label
-                        className="btn btn-outline-primary flex-grow-1"
-                        htmlFor={`explainingAbility-${option}`}
-                      >
-                        {option}
-                      </label>
-                    </React.Fragment>
-                  ))}
-                </div>
-              </div>
-              <div className="mb-4">
-                <p className="fw-bold">
-                  I enjoy brainstorming innovative ideas to solve challenges.
-                </p>
-                <div className="btn-group d-flex flex-wrap" role="group">
-                  {[
-                    "Strongly Disagree",
-                    "Disagree",
-                    "Neutral",
-                    "Agree",
-                    "Strongly Agree",
-                  ].map((option) => (
-                    <React.Fragment key={option}>
-                      <input
-                        type="radio"
-                        className="btn-check"
-                        name="innovativeIdeas"
-                        id={`innovativeIdeas-${option}`}
-                        value={option}
-                        checked={formData.innovativeIdeas === option}
-                        onChange={handleChange}
-                      />
-                      <label
-                        className="btn btn-outline-primary flex-grow-1"
-                        htmlFor={`innovativeIdeas-${option}`}
-                      >
-                        {option}
-                      </label>
-                    </React.Fragment>
-                  ))}
-                </div>
-              </div>
-              <div className="mb-4">
-                <p className="fw-bold">
-                  I pay close attention to details to ensure accuracy in my
-                  work.
-                </p>
-                <div className="btn-group d-flex flex-wrap" role="group">
-                  {[
-                    "Strongly Disagree",
-                    "Disagree",
-                    "Neutral",
-                    "Agree",
-                    "Strongly Agree",
-                  ].map((option) => (
-                    <React.Fragment key={option}>
-                      <input
-                        type="radio"
-                        className="btn-check"
-                        name="attentionToDetail"
-                        id={`attentionToDetail-${option}`}
-                        value={option}
-                        checked={formData.attentionToDetail === option}
-                        onChange={handleChange}
-                      />
-                      <label
-                        className="btn btn-outline-primary flex-grow-1"
-                        htmlFor={`attentionToDetail-${option}`}
-                      >
-                        {option}
-                      </label>
-                    </React.Fragment>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mb-4">
-                <p className="fw-bold">
-                  I feel fulfilled when helping others overcome challenges.
-                </p>
-                <div className="btn-group d-flex flex-wrap" role="group">
-                  {[
-                    "Strongly Disagree",
-                    "Disagree",
-                    "Neutral",
-                    "Agree",
-                    "Strongly Agree",
-                  ].map((option) => (
-                    <React.Fragment key={option}>
-                      <input
-                        type="radio"
-                        className="btn-check"
-                        name="helpingOthers"
-                        id={`helpingOthers-${option}`}
-                        value={option}
-                        checked={formData.helpingOthers === option}
-                        onChange={handleChange}
-                      />
-                      <label
-                        className="btn btn-outline-primary flex-grow-1"
-                        htmlFor={`helpingOthers-${option}`}
-                      >
-                        {option}
-                      </label>
-                    </React.Fragment>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mb-4">
-                <p className="fw-bold">Which activity excites you the most?</p>
-                <div className="d-flex flex-column gap-2">
-                  {[
-                    "Analyzing data to make predictions",
-                    "Designing and building systems",
-                    "Understanding and improving human health",
-                  ].map((option) => (
-                    <div key={option} className="form-check">
-                      <input
-                        className="form-check-input"
-                        type="radio"
-                        name="excitingActivity"
-                        id={`excitingActivity-${option}`}
-                        value={option}
-                        checked={formData.excitingActivity === option}
-                        onChange={handleChange}
-                      />
-                      <label
-                        className="form-check-label"
-                        htmlFor={`excitingActivity-${option}`}
-                      >
-                        {option}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mb-4">
-                <p className="fw-bold">
-                  Which type of project would you prefer?
-                </p>
-                <div className="d-flex flex-column gap-2">
-                  {[
-                    "Developing innovative software solutions",
-                    "Researching solutions for medical issues",
-                    "Designing a new mechanical or electrical system",
-                  ].map((option) => (
-                    <div key={option} className="form-check">
-                      <input
-                        className="form-check-input"
-                        type="radio"
-                        name="projectPreference"
-                        id={`projectPreference-${option}`}
-                        value={option}
-                        checked={formData.projectPreference === option}
-                        onChange={handleChange}
-                      />
-                      <label
-                        className="form-check-label"
-                        htmlFor={`projectPreference-${option}`}
-                      >
-                        {option}
-                      </label>
-                    </div>
-                  ))}
-                </div>
+                {[
+                  "Developing innovative software solutions",
+                  "Researching solutions for medical issues",
+                  "Designing a new mechanical or electrical system",
+                ].map((option) => (
+                  <div key={option} className="form-check">
+                    <input
+                      className="form-check-input"
+                      type="radio"
+                      name="projectPreference"
+                      id={`projectPreference-${option}`}
+                      value={option}
+                      checked={formData.projectPreference === option}
+                      onChange={handleChange}
+                      required
+                    />
+                    <label
+                      className="form-check-label"
+                      htmlFor={`projectPreference-${option}`}
+                    >
+                      {option}
+                    </label>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         )}
 
         <div className="d-flex justify-content-between">
-          {activeSection !== "personal" && (
+          {activeSection === "personality" && (
             <button
               type="button"
               className="btn btn-secondary"
-              onClick={() =>
-                setActiveSection(
-                  activeSection === "academic" ? "personal" : "academic"
-                )
-              }
+              onClick={() => setActiveSection("academic")}
             >
               Previous
             </button>
           )}
-
-          {activeSection !== "personality" ? (
+          {activeSection === "academic" ? (
             <button
               type="button"
               className="btn btn-primary ms-auto"
-              onClick={() =>
-                setActiveSection(
-                  activeSection === "personal" ? "academic" : "personality"
-                )
-              }
+              onClick={() => setActiveSection("personality")}
+              disabled={!isFormValid}
             >
               Next
             </button>
           ) : (
-            <button type="submit" className="btn btn-success ms-auto">
-              Save
+            <button
+              type="submit"
+              className="btn btn-success ms-auto"
+              disabled={!isFormValid || isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <span
+                    className="spinner-border spinner-border-sm me-2"
+                    role="status"
+                    aria-hidden="true"
+                  ></span>
+                  Predicting...
+                </>
+              ) : (
+                "Submit"
+              )}
             </button>
           )}
         </div>
       </form>
-
-      <div className="text-center mt-3">
-        <small className="text-primary fw-bold">
-          {activeSection === "personal" && "Personal Information"}
-          {activeSection === "academic" && "Academic Information"}
-          {activeSection === "personality" && "Personality Assessment"}
-        </small>
-      </div>
     </div>
   );
 };

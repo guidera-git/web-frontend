@@ -10,7 +10,6 @@ function NavigationBar() {
   const { theme, toggleTheme } = useContext(ThemeContext);
   const [activeLink, setActiveLink] = useState("Home");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [profilePicture, setProfilePicture] = useState(null);
 
   const [notifications] = useState([
     "New message from Admin",
@@ -24,21 +23,6 @@ function NavigationBar() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     setIsLoggedIn(!!token);
-
-    if (token) {
-      axios
-        .get("http://localhost:5000/api/profile", {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        .then((res) => {
-          if (res.data.profilePicture) {
-            setProfilePicture(res.data.profilePicture);
-          }
-        })
-        .catch((err) => {
-          console.error("Failed to fetch profile data:", err);
-        });
-    }
   }, []);
 
   return (
@@ -69,7 +53,6 @@ function NavigationBar() {
               { name: "Chatbot", path: "/chatbot" },
               { name: "Contact Us", path: "/contactus" },
               { name: "About Us", path: "/aboutus" },
-              { name: "Form", path: "/Form" },
             ].map(({ name, path }) => (
               <Nav.Link
                 key={name}
@@ -142,7 +125,7 @@ function NavigationBar() {
             {isLoggedIn ? (
               <Link to="/profile">
                 <img
-                  src={profilePicture || "/blueprint.png"}
+                  src={"/blueprint.png"}
                   alt="Profile"
                   width="35"
                   height="35"
