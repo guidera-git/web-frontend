@@ -1,3 +1,19 @@
+
+@media (min-width: 768px) {
+.gradient-form {
+height: 100vh !important;
+}
+}
+@media (min-width: 769px) {
+.gradient-custom-2 {
+border-top-right-radius: .3rem;
+border-bottom-right-radius: .3rem;
+}
+}
+.bg-new{
+  
+    background-color: #222222;
+}
 .custom-container{
 background-color: #222222;
 
@@ -29,4 +45,48 @@ background-color: #222222;
     box-shadow: rgba(255, 255, 255, 0.1);
   }
   
- 
+.typewriter-text {
+  font-family: monospace;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.blinking-cursor {
+  animation: blink 1s step-start infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.typewriter {
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 2px solid #000;
+  animation: typing 6s steps(100, end) infinite, blink 0.75s step-end infinite;
+  max-width: 100%;
+}
+
+@keyframes typing {
+  0% {
+    width: 0;
+  }
+  50% {
+    width: 100%;
+  }
+  100% {
+    width: 0;
+  }
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    border-color: transparent;
+  }
+  50% {
+    border-color: black;
+  }
+}

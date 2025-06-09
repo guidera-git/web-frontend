@@ -120,7 +120,7 @@ const Section3 = () => {
 
   const teamMembers = [
     { name: "Aliyaan Umar", role: "Team Lead" },
-    { name: "Hamza Raza Hussain", role: "Top Developer" },
+    { name: "Hamza Raza Hussain", role: "Full Stack Developer" },
     { name: "Sami Ullah", role: "AI Specialist" },
     { name: "Saad Mahmood", role: "Data Scientist" },
   ];
