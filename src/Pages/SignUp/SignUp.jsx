@@ -60,7 +60,7 @@ function Signup() {
           <div className="row h-100">
             <div className="col-md d-flex align-items-center justify-content-center flex-column p-4 text-white">
               <img
-                src="/guidera_logo.PNG"
+                src="/guidera_logo_dark.PNG"
                 alt="Guidera Logo"
                 className="mb-3 mt-0"
                 style={{ width: "150px", paddingTop: "5px" }}

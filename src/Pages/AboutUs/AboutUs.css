@@ -11,6 +11,27 @@
   font-weight: bold;
   color: #ffffff;
 }
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+  background-size: 100% 100%;
+  width: 30px;
+  height: 30px;
+}
+
+/* White arrows for dark theme */
+.find-university.dark .carousel-control-prev-icon,
+.find-university.dark .carousel-control-next-icon {
+  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23ffffff' viewBox='0 0 8 8'%3E%3Cpath d='M4.5 0L3.09 1.41 5.67 4 3.09 6.59 4.5 8l4-4-4-4z'/%3E%3C/svg%3E");
+}
+.carousel-control-prev-icon {
+  transform: rotate(180deg);
+}
+
+/* Dark arrows for light theme */
+.find-university.light .carousel-control-prev-icon,
+.find-university.light .carousel-control-next-icon {
+  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23000000' viewBox='0 0 8 8'%3E%3Cpath d='M4.5 0L3.09 1.41 5.67 4 3.09 6.59 4.5 8l4-4-4-4z'/%3E%3C/svg%3E");
+}
 
 .sub-heading {
   font-size: 1.5rem;

@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./UniversityList.css";
+import { ThemeContext } from "../../ThemeContext";
 import { Modal, Button, Nav, Tab, Row, Col, ListGroup } from "react-bootstrap";
 
 const UniversityList = ({
@@ -9,6 +10,7 @@ const UniversityList = ({
   isComparisonDisabled,
   isComparisonCleared,
 }) => {
+  const { theme } = useContext(ThemeContext);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [rating, setRating] = useState(university.rating);
   const [isSelectedForComparison, setIsSelectedForComparison] = useState(false);
@@ -42,32 +44,32 @@ const UniversityList = ({
   return (
     <>
       <div
-        className="university-card container p-4 rounded shadow-lg bg-light"
+        className={`university-card container p-4 rounded shadow-lg ${theme === "dark" ? "bg-dark text-light" : "bg-light text-dark"
+          }`}
         style={{
           cursor: "pointer",
           transition: "0.3s",
-          hover: { transform: "scale(1.02)" },
         }}
+        onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.02)")}
+        onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
       >
+
         <div className="d-flex justify-content-between align-items-center">
           <h4 className="fw-bold">{university.name}</h4>
           <div>
             <i
-              className={`bi ${
-                isBookmarked ? "bi-bookmark-fill text-primary" : "bi-bookmark"
-              } me-2`}
+              className={`bi ${isBookmarked ? "bi-bookmark-fill text-primary" : "bi-bookmark"
+                } me-2`}
               onClick={toggleBookmark}
               style={{ cursor: "pointer", fontSize: "1.5rem" }}
             ></i>
             <i
-              className={`bi bi-arrow-left-right ${
-                isSelectedForComparison ? "text-primary" : "text-dark"
-              }
-              ${
-                isComparisonDisabled && !isSelectedForComparison
+              className={`bi bi-arrow-left-right ${isSelectedForComparison ? "text-primary" : "tex-white"
+                }
+              ${isComparisonDisabled && !isSelectedForComparison
                   ? "text-muted"
                   : ""
-              } me-2`}
+                } me-2`}
               style={{
                 cursor:
                   isComparisonDisabled && !isSelectedForComparison
@@ -104,11 +106,10 @@ const UniversityList = ({
               {[...Array(5)].map((_, index) => (
                 <i
                   key={index}
-                  className={`bi ${
-                    index + 1 <= rating
-                      ? "bi-star-fill text-warning"
-                      : "bi-star"
-                  } `}
+                  className={`bi ${index + 1 <= rating
+                    ? "bi-star-fill text-warning"
+                    : "bi-star"
+                    } `}
                   style={{ cursor: "pointer" }}
                   onClick={() => handleStarClick(index)}
                 ></i>

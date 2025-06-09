@@ -9,3 +9,7 @@
   background-color: #222222 !important;
   color: #ffffff;
 }
+.placeholder-primary::placeholder {
+  color: #0d6efd; /* Bootstrap primary color */
+  opacity: 1;
+}

@@ -43,25 +43,32 @@ function Login() {
   };
 
   return (
-    <div className="custom-container min-vh-100 d-flex align-items-center justify-content-center">
-      <div className="container-fluid h-100">
-        <div className="row h-100">
+    <div className="custom-container min-vh-50 d-flex align-items-center justify-content-center">
+      <div className="container-fluid h-50">
+        <div className="row h-50">
           <div className="col-md d-flex align-items-center justify-content-center flex-column p-4 text-white">
             <img
-              src="/guidera_logo.PNG"
+              src="/guidera_logo_dark.PNG"
               alt="Guidera Logo"
               className="mb-3 mt-0 justify-content-center"
               style={{ width: "150px", paddingTop: "5px" }}
             />
             <h2 className="p-1">Welcome Back</h2>
             <h3 className="p-1">Log into your Account</h3>
-
+            <button className="btn google-btn mb-3 d-flex align-items-center justify-content-center rounded-pill">
+              <img
+                src="/google.svg"
+                alt="Google Logo"
+                style={{ width: "20px", marginRight: "10px" }}
+              />
+              Continue with Google
+            </button>
             <div
               className="d-flex align-items-center my-3"
               style={{ width: "55%" }}
             >
               <hr className="flex-grow-1 text-white" />
-              <span className="mx-2">with Email</span>
+              <span className="mx-2">or with Email</span>
               <hr className="flex-grow-1 text-white" />
             </div>
 
@@ -71,7 +78,7 @@ function Login() {
               </label>
               <input
                 type="email"
-                className="form-control border-0 border-bottom bg-transparent text-white mb-2 rounded-0"
+                className="form-control p-2 custom-input mb-2"
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -82,7 +89,7 @@ function Login() {
               </label>
               <input
                 type="password"
-                className="form-control border-0 border-bottom bg-transparent text-white mb-2 rounded-0"
+                className="form-control p-2 custom-input mb-2"
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

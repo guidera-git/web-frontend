@@ -116,6 +116,8 @@ function Section2() {
   );
 }
 const Section3 = () => {
+  const { theme } = useContext(ThemeContext); // Add this line
+
   const teamMembers = [
     { name: "Aliyaan Umar", role: "Team Lead" },
     { name: "Hamza Raza Hussain", role: "Top Developer" },
@@ -133,6 +135,14 @@ const Section3 = () => {
     }
   };
 
+  // Determine card background based on theme
+  const cardStyle = {
+    backgroundColor: theme === "dark" ? "#222" : "#fff",
+    borderRadius: "15px",
+    padding: "20px",
+    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+  };
+
   return (
     <div className="custom-container text-center py-5 border-bottom border-2 border-primary">
       <h2 className="text-white">Meet Our Team</h2>
@@ -145,7 +155,7 @@ const Section3 = () => {
       <Carousel
         indicators={false}
         controls={true}
-        interval={null} // No auto-scroll
+        interval={null}
         activeIndex={index}
         onSelect={handleSelect}
         className="team-carousel"
@@ -155,7 +165,7 @@ const Section3 = () => {
             <Carousel.Item key={i}>
               <div className="d-flex justify-content-center">
                 {teamMembers.slice(i * 2, i * 2 + 2).map((member, idx) => (
-                  <div className="team-card mx-2" key={idx}>
+                  <div className="team-card mx-2" key={idx} style={cardStyle}>
                     <img
                       src="./blueprint.png"
                       alt={member.name}
@@ -173,4 +183,5 @@ const Section3 = () => {
     </div>
   );
 };
+
 export default AboutUs;

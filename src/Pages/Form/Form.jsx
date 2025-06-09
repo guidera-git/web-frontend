@@ -226,7 +226,7 @@ const Form = () => {
 
   return (
     <div className="container py-4">
-      <h1 className="text-center mb-4" style={{ color: "#2E86AB" }}>
+      <h1 className="text-center mb-4 text-primary">
         Guidera
       </h1>
 
@@ -236,9 +236,8 @@ const Form = () => {
         {["academic", "personality"].map((section) => (
           <button
             key={section}
-            className={`btn ${
-              activeSection === section ? "btn-primary" : "btn-outline-primary"
-            } mx-2`}
+            className={`btn ${activeSection === section ? "btn-primary" : "btn-outline-primary"
+              } mx-2`}
             onClick={() => setActiveSection(section)}
           >
             {section.charAt(0).toUpperCase() + section.slice(1)}
@@ -248,13 +247,13 @@ const Form = () => {
 
       <form onSubmit={handleSubmit}>
         {activeSection === "academic" && (
-          <div className="card mb-4 border-primary border-2">
-            <div className="card-header bg-primary text-white">
+          <div className="">
+            <div className="rounded center text-primary text-center">
               <h3>Academic Information</h3>
             </div>
             <div
-              className="card-body"
-              style={{ background: "#222222", color: "white" }}
+              className="form-control p-2 custom-input mb-2"
+              style={{ background: "", color: "white" }}
             >
               {/* Gender Field */}
               <div className="mb-3">
@@ -297,7 +296,7 @@ const Form = () => {
               <div className="mb-3">
                 <label className="form-label">Student Type*</label>
                 <select
-                  className="form-select"
+                  className="form-control p-2 custom-input mb-2"
                   name="studentType"
                   value={formData.studentType}
                   onChange={handleChange}
@@ -317,7 +316,7 @@ const Form = () => {
                     </label>
                     <input
                       type="number"
-                      className="form-control"
+                      className="form-control p-2 custom-input mb-2l"
                       name="matriculationMarks"
                       value={formData.matriculationMarks}
                       onChange={handleChange}
@@ -332,7 +331,7 @@ const Form = () => {
                     </label>
                     <input
                       type="number"
-                      className="form-control"
+                      className="form-control p-2 custom-input mb-2"
                       name="intermediateMarks"
                       value={formData.intermediateMarks}
                       onChange={handleChange}
@@ -385,7 +384,7 @@ const Form = () => {
               <div className="mb-3">
                 <label className="form-label">Study Stream*</label>
                 <select
-                  className="form-select"
+                  className="form-control p-2 custom-input mb-2"
                   name="studyStream"
                   value={formData.studyStream}
                   onChange={handleChange}
@@ -402,12 +401,12 @@ const Form = () => {
         )}
 
         {activeSection === "personality" && (
-          <div className="card mb-4 border-primary border-2">
-            <div className="card-header bg-primary text-white">
+          <div className="">
+            <div className="rounded center text-primary text-center">
               <h3>Personality Assessment</h3>
             </div>
             <div
-              className="card-body"
+              className="form-control p-2 custom-input mb-2"
               style={{ background: "#222222", color: "white" }}
             >
               {renderRadioGroup(

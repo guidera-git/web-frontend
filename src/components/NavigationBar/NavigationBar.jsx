@@ -33,11 +33,12 @@ function NavigationBar() {
       <Container fluid>
         <Navbar.Brand as={Link} to="/">
           <img
-            src="/guidera_logo.PNG"
+            src={theme === "light" ? "/guidera_logo_white.PNG" : "/guidera_logo_dark.PNG"}
             alt="Guidera Logo"
             width="70"
             height="45"
           />
+
         </Navbar.Brand>
 
         <Navbar.Toggle
@@ -58,9 +59,8 @@ function NavigationBar() {
                 key={name}
                 as={Link}
                 to={path}
-                className={`nav-link ${
-                  activeLink === name ? "active-link" : "inactive-link"
-                }`}
+                className={`nav-link ${activeLink === name ? "active-link" : "inactive-link"
+                  }`}
                 onClick={() => setActiveLink(name)}
               >
                 {name}

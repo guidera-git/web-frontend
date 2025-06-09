@@ -312,11 +312,10 @@ const FilterModal = ({ show, onClose, onApply, filters, setFilters }) => {
                   style={{ width: "1.5rem", display: "inline-block" }}
                 >
                   <i
-                    className={`bi ${
-                      filters.rating >= halfStarValue
-                        ? "bi-star-half text-warning"
-                        : "bi-star text-secondary"
-                    } position-absolute`}
+                    className={`bi ${filters.rating >= halfStarValue
+                      ? "bi-star-half text-warning"
+                      : "bi-star text-secondary"
+                      } position-absolute`}
                     style={{
                       cursor: "pointer",
                       fontSize: "1.5rem",
@@ -327,11 +326,10 @@ const FilterModal = ({ show, onClose, onApply, filters, setFilters }) => {
                     }
                   ></i>
                   <i
-                    className={`bi ${
-                      filters.rating >= fullStarValue
-                        ? "bi-star-fill text-warning"
-                        : "bi-star text-secondary"
-                    }`}
+                    className={`bi ${filters.rating >= fullStarValue
+                      ? "bi-star-fill text-warning"
+                      : "bi-star text-secondary"
+                      }`}
                     style={{ cursor: "pointer", fontSize: "1.5rem" }}
                     onClick={() =>
                       setFilters({ ...filters, rating: fullStarValue })
@@ -426,19 +424,19 @@ const Section2 = ({ onCompare, isComparisonDisabled, isComparisonCleared }) => {
             maxWidth: "900px",
             borderRadius: "30px",
             overflow: "hidden",
-            backgroundColor: "#fff",
+            backgroundColor: "#333333",
           }}
         >
           <input
-            type="text"
-            className="form-control border-0 ps-4"
+            type="text text-primary"
+            className="form-control border-0 ps-4 placeholder-primary"
             placeholder="Search by University Name, Degree"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{
               height: "50px",
               borderRadius: "30px",
-              backgroundColor: "#fff",
+              backgroundColor: "#333333",
               outline: "none",
               boxShadow: "none",
             }}
@@ -448,7 +446,7 @@ const Section2 = ({ onCompare, isComparisonDisabled, isComparisonCleared }) => {
             style={{ cursor: "pointer" }}
             onClick={() => setShowFilter((prev) => !prev)}
           >
-            <i className="bi bi-funnel"></i>
+            <i className="bi bi-funnel" style={{ color: "white" }}></i>
           </span>
           <button
             className="btn d-flex align-items-center shadow-sm"
@@ -506,9 +504,8 @@ const Section2 = ({ onCompare, isComparisonDisabled, isComparisonCleared }) => {
                   return (
                     <li
                       key={page}
-                      className={`page-item ${
-                        currentPage === page ? "active" : ""
-                      }`}
+                      className={`page-item ${currentPage === page ? "active" : ""
+                        }`}
                     >
                       <button
                         className="page-link"
@@ -529,9 +526,8 @@ const Section2 = ({ onCompare, isComparisonDisabled, isComparisonCleared }) => {
               }
             )}
             <li
-              className={`page-item ${
-                currentPage === totalPages ? "disabled" : ""
-              }`}
+              className={`page-item ${currentPage === totalPages ? "disabled" : ""
+                }`}
             >
               <button
                 className="page-link"

@@ -1,8 +1,11 @@
-import React from "react";
+import React, { useContext } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./Footer.css";
 
+import { ThemeContext } from "../../ThemeContext";
 function Footer() {
+
+  const { theme } = useContext(ThemeContext); // <-- Add this line
   return (
     <div className="container-fluid p-0">
       <footer className="custom-footer d-flex flex-column">
@@ -13,10 +16,10 @@ function Footer() {
               className="d-flex align-items-center mb-3 link-light text-decoration-none"
             >
               <img
-                src="/guidera_logo.PNG"
+                src={theme === "light" ? "/guidera_logo_white.PNG" : "/guidera_logo_dark.PNG"}
                 alt="Guidera Logo"
-                width="80"
-                height="60"
+                width="70"
+                height="45"
               />
             </a>
             <div className="d-flex">

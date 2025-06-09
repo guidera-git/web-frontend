@@ -61,9 +61,15 @@ function Section2() {
     </div>
   );
 }
+
 function Section3() {
+  const { theme } = useContext(ThemeContext);
+
   return (
-    <div className="p-4 rounded custom-container text-light border-bottom border-2 border-primary">
+    <div
+      className={`p-4 rounded custom-container border-bottom border-2 border-primary ${theme === "dark" ? "text-light bg-dark" : "text-dark bg-light"
+        }`}
+    >
       <h3 className="text-center mb-4">Send Us a Message</h3>
       <div className="d-flex justify-content-center">
         <div className="w-75">
@@ -75,7 +81,7 @@ function Section3() {
               <input
                 type="text"
                 id="firstName"
-                className="form-control bg-dark text-light border-primary border-2"
+                className="form-control p-2 custom-input mb-2"
                 placeholder="Enter First Name"
               />
             </div>
@@ -86,7 +92,7 @@ function Section3() {
               <input
                 type="text"
                 id="lastName"
-                className="form-control bg-dark text-light border-primary border-2"
+                className="form-control p-2 custom-input mb-2"
                 placeholder="Enter Last Name"
               />
             </div>
@@ -97,7 +103,7 @@ function Section3() {
               <input
                 type="email"
                 id="email"
-                className="form-control bg-dark text-light border-primary border-2"
+                className="form-control p-2 custom-input mb-2"
                 placeholder="name@gmail.com"
               />
             </div>
@@ -108,19 +114,16 @@ function Section3() {
               <input
                 type="text"
                 id="subject"
-                className="form-control bg-dark text-light border-primary border-2"
+                className="form-control p-2 custom-input mb-2"
                 placeholder="What's this about"
               />
             </div>
-            <div className="mb-3 col-md-12">
-              <label
-                htmlFor="messageFormControlTextarea1"
-                className="form-label"
-              >
+            <div className="col-12">
+              <label htmlFor="messageFormControlTextarea1" className="form-label">
                 Message
               </label>
               <textarea
-                className="form-control bg-dark text-light border-primary border-2"
+                className="form-control p-2 custom-input mb-2"
                 id="messageFormControlTextarea1"
                 rows="3"
                 placeholder="Type Your Message Here"
@@ -137,5 +140,6 @@ function Section3() {
     </div>
   );
 }
+
 
 export default ContactUs;
