@@ -1,0 +1,6 @@
+/* Align dropdown to right only on hamburger (mobile view) */
+.dropdown-notifications.dropdown-right .dropdown-menu {
+  left: 100% !important;
+  right: auto !important;
+  transform: translateX(0%) !important;
+}

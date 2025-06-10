@@ -5,20 +5,12 @@ import { Navbar, Nav, Dropdown, Container } from "react-bootstrap";
 import { ThemeContext } from "../../ThemeContext";
 import axios from "axios";
 import "./NavigationBar.css";
-
+import Notification from "../Notification/Notification";
 function NavigationBar() {
   const { theme, toggleTheme } = useContext(ThemeContext);
   const [activeLink, setActiveLink] = useState("Home");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const [notifications] = useState([
-    "New message from Admin",
-    "Your profile has been updated",
-    "Upcoming meeting tomorrow at 10 AM",
-    "New user registered",
-    "Server maintenance scheduled",
-    "Your request has been approved",
-  ]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -69,48 +61,7 @@ function NavigationBar() {
           </Nav>
 
           <div className="d-flex align-items-center gap-3">
-            {/* Notifications Dropdown */}
-            <Dropdown
-              className="dropdown-notifications"
-              drop="down"
-              align="end"
-            >
-              <Dropdown.Toggle
-                as="div"
-                className="position-relative"
-                style={{ cursor: "pointer" }}
-              >
-                <img
-                  src="/bell.svg"
-                  alt="Notifications"
-                  width="25"
-                  height="25"
-                />
-                {notifications.length > 0 && (
-                  <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                    {notifications.length}
-                  </span>
-                )}
-              </Dropdown.Toggle>
-              <Dropdown.Menu
-                className="p-2 shadow"
-                style={{
-                  minWidth: "250px",
-                  maxHeight: "250px",
-                  overflowY: "auto",
-                }}
-              >
-                {notifications.length > 0 ? (
-                  notifications.map((notification, index) => (
-                    <Dropdown.Item key={index} className="text-wrap">
-                      {notification}
-                    </Dropdown.Item>
-                  ))
-                ) : (
-                  <Dropdown.Item disabled>No new notifications</Dropdown.Item>
-                )}
-              </Dropdown.Menu>
-            </Dropdown>
+            <Notification />
 
             <img
               src={theme === "light" ? "/theme2.png" : "/theme.png"}

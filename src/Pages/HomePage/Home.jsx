@@ -42,7 +42,7 @@ function Section1() {
         </div>
         <div className="col-md-6 d-flex justify-content-center align-items-center p-0">
           <img
-            src={"student_laptop.svg"}
+            src={theme === "light" ? "/student_laptop.svg" : "/student_laptop_whit.svg"}
             alt="Home1"
             width={400}
             height={400}
