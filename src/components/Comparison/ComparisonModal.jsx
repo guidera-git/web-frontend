@@ -28,8 +28,8 @@ const ComparisonModal = ({ university1, university2, onClose }) => {
                 <thead>
                   <tr>
                     <th className="bg-primary">Criteria</th>
-                    <th>{university1.name}</th>
-                    <th>{university2.name}</th>
+                    <th>{university1.university_title || "N/A"}</th>
+                    <th>{university2.university_title || "N/A"}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -37,43 +37,49 @@ const ComparisonModal = ({ university1, university2, onClose }) => {
                     <td className="bg-primary text-white">
                       <strong>Degree</strong>
                     </td>
-                    <td>{university1.degree}</td>
-                    <td>{university2.degree}</td>
+                    <td>{university1.program_title || "N/A"}</td>
+                    <td>{university2.program_title || "N/A"}</td>
                   </tr>
                   <tr>
                     <td className="bg-primary text-white">
                       <strong>Duration</strong>
                     </td>
-                    <td>{university1.duration}</td>
-                    <td>{university2.duration}</td>
+                    <td>{university1.program_duration || "N/A"}</td>
+                    <td>{university2.program_duration || "N/A"}</td>
                   </tr>
                   <tr>
                     <td className="bg-primary text-white">
                       <strong>Tuition Fee</strong>
                     </td>
-                    <td>{university1.tuition}</td>
-                    <td>{university2.tuition}</td>
+                    <td>{university1.fee[0]?.total_tution_fee || "N/A"}</td>
+                    <td>{university2.fee[0]?.total_tution_fee || "N/A"}</td>
                   </tr>
                   <tr>
                     <td className="bg-primary text-white">
                       <strong>Beginning</strong>
                     </td>
-                    <td>{university1.beginning}</td>
-                    <td>{university2.beginning}</td>
+                    <td>
+                      {university1.important_dates[0].commencement_of_classes ||
+                        "N/A"}
+                    </td>
+                    <td>
+                      {university2.important_dates[0].commencement_of_classes ||
+                        "N/A"}
+                    </td>
                   </tr>
                   <tr>
                     <td className="bg-primary text-white">
                       <strong>Location</strong>
                     </td>
-                    <td>{university1.location}</td>
-                    <td>{university2.location}</td>
+                    <td>{university1.location || "N/A"}</td>
+                    <td>{university2.location || "N/A"}</td>
                   </tr>
                   <tr>
                     <td className="bg-primary text-white">
                       <strong>Rating</strong>
                     </td>
-                    <td>{university1.rating}</td>
-                    <td>{university2.rating}</td>
+                    <td>{university1.qs_ranking || "N/A"}</td>
+                    <td>{university2.qs_ranking || "N/A"}</td>
                   </tr>
                 </tbody>
               </table>
