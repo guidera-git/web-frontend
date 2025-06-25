@@ -19,15 +19,51 @@ function Section1() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showSuggestions, setShowSuggestions] = useState(true);
   const messagesEndRef = useRef(null);
+
+  // Suggestions data
+  const suggestions = [
+    { title: "Guidera", prompt: "What is Guidera?" },
+    { title: "Business suggestion", prompt: "Suggest some business ideas" },
+    { title: "Science", prompt: "What is Science?" },
+    { title: "Photosynthesis", prompt: "what is Photosynthesis" },
+  ];
+
+  // Check localStorage on component mount
+  useEffect(() => {
+    const hasInteracted = localStorage.getItem("chatbotHasInteracted");
+    if (hasInteracted === "true") {
+      setShowSuggestions(true);
+    }
+
+    // Optional: Hide suggestions after some time (e.g., 24 hours)
+    const lastInteraction = localStorage.getItem("chatbotLastInteractio");
+    if (lastInteraction) {
+      const oneDay = 24 * 60 * 60 * 1000;
+      if (Date.now() - parseInt(lastInteraction) > oneDay) {
+        setShowSuggestions(true);
+        localStorage.removeItem("chatbotHasInteracted");
+      }
+    }
+  }, []);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  const handleSuggestionClick = (prompt) => {
+    setInput(prompt);
+  };
+
   const sendMessage = async () => {
     if (input.trim() === "") return;
+
+    // Hide suggestions and mark as interacted
+    setShowSuggestions(false);
+    localStorage.setItem("chatbotHasInteracted", "true");
+    localStorage.setItem("chatbotLastInteraction", Date.now().toString());
 
     // Add user message to chat
     const userMessage = { text: input, type: "outgoing" };
@@ -85,11 +121,35 @@ function Section1() {
 
   return (
     <div className="d-flex custom-container vh-100">
-      {/* Chat Box Container */}
       <div
         className="flex-grow-1 overflow-auto d-flex flex-column align-items-center p-3"
         style={{ maxHeight: "calc(100vh - 70px)", paddingBottom: "80px" }}
       >
+        {showSuggestions && messages.length === 0 && (
+          <div className="w-100 text-center p-4">
+            <h3 className="mb-3">How can I assist you today?</h3>
+            <p className="mb-4">
+              Tap below suggestions or write your own query.
+            </p>
+
+            <div className="row g-1 mb-4">
+              {suggestions.map((suggestion, index) => (
+                <div key={index} className="col-6">
+                  <div
+                    className="p-3 bg-light rounded shadow-sm text-center cursor-pointer hover-effect mx-auto mb-3"
+                    style={{ maxWidth: "500px" }}
+                    onClick={() => handleSuggestionClick(suggestion.prompt)}
+                  >
+                    {suggestion.title}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="fst-italic mt-5">Ask anything....</div>
+          </div>
+        )}
+
         {messages.map((msg, index) => (
           <div
             key={index}

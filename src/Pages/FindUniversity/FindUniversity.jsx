@@ -5,7 +5,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./FindUniversity.css";
 import UniversityList from "../../components/UniversityList/UniversityList";
 import ComparisonModal from "../../components/Comparison/ComparisonModal";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 function FindUniversity() {
   const [selectedForComparison, setSelectedForComparison] = useState([]);
   const [isComparisonCleared, setIsComparisonCleared] = useState(false);
@@ -30,7 +30,7 @@ function FindUniversity() {
 
   return (
     <div className={`find-university ${theme}`}>
-      <Section1 />{" "}
+      <Section1 />
       <Section2
         onCompare={handleCompare}
         isComparisonDisabled={selectedForComparison.length >= 2}
@@ -49,6 +49,7 @@ function FindUniversity() {
 function Section1() {
   const navigate = useNavigate();
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const { theme } = useContext(ThemeContext);
 
   const handleRecommendationClick = () => {
     setShowConfirmation(true);
@@ -58,54 +59,73 @@ function Section1() {
     setShowConfirmation(false);
     navigate("/Form");
   };
-
   const handleGoBack = () => {
     setShowConfirmation(false);
   };
+  const modalStyles = {
+    backdrop: {
+      position: "fixed",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: theme === "dark" ? "rgba(0,0,0,0.8)" : "rgba(0,0,0,0.5)",
+      zIndex: 1040,
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    content: {
+      maxWidth: "500px",
+      width: "90%",
+      border: `1px solid ${theme === "dark" ? "#444" : "#0d6efd"}`,
+      backgroundColor: theme === "dark" ? "#333" : "#fff",
+      color: theme === "dark" ? "#fff" : "#000",
+    },
+    text: {
+      color: theme === "dark" ? "#fff" : "#000",
+    },
+  };
 
   return (
-    <div className="custom-container text-white container border-bottom border-2 border-primary">
+    <div
+      className={`custom-container text-white container border-bottom border-2 border-primary ${theme}`}
+    >
       {showConfirmation && (
-        <div
-          className="modal-backdrop"
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.5)",
-            zIndex: 1040,
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
+        <div className="modal-backdrop" style={modalStyles.backdrop}>
           <div
-            className="modal-content bg-dark p-4 rounded"
-            style={{
-              maxWidth: "500px",
-              width: "90%",
-              border: "1px solid #0d6efd",
-            }}
+            className="modal-content p-4 rounded"
+            style={modalStyles.content}
           >
-            <h4 className="text-primary mb-3">Before we continue...</h4>
-            <p>We need some information to give you the best recommendation.</p>
+            <h4 className="mb-3" style={modalStyles.text}>
+              Before we continue...
+            </h4>
+            <p style={modalStyles.text}>
+              We need some information to give you the best recommendation.
+            </p>
             <div className="d-flex justify-content-center gap-3 mt-4">
               <button
-                className="btn btn-outline-secondary"
+                className={`btn ${
+                  theme === "dark"
+                    ? "btn-outline-light"
+                    : "btn-outline-secondary"
+                }`}
                 onClick={handleGoBack}
               >
                 Go Back
               </button>
-              <button className="btn btn-primary" onClick={handleContinue}>
+              <button
+                className={`btn ${
+                  theme === "dark" ? "btn-primary" : "btn-primary"
+                }`}
+                onClick={handleContinue}
+              >
                 Continue
               </button>
             </div>
           </div>
         </div>
       )}
-
       <div className="row min-vh-20">
         <div className="col-md-8 d-flex flex-column justify-content-center align-items-center p-5">
           <h2>
@@ -141,6 +161,7 @@ function Section1() {
 }
 
 function Section2({ onCompare, isComparisonDisabled, isComparisonCleared }) {
+  const location = useLocation();
   const [universities, setUniversities] = useState([]);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
@@ -148,18 +169,18 @@ function Section2({ onCompare, isComparisonDisabled, isComparisonCleared }) {
   const [locations, setLocations] = useState([]);
   const [programsOffered, setProgramsOffered] = useState([]);
   const [universityNames, setUniversityNames] = useState([]);
+  const [stats, setStats] = useState(null); // NEW
+  const { program } = location.state || {};
 
   const [filters, setFilters] = useState({
     location: "all",
-    program_title: "all",
+    program_title: program || "all",
     university_title: "all",
-    qs_ranking: "all",
     min_total_fee: "",
     max_total_fee: "",
-    min_credit_fee: "",
-    max_credit_fee: "",
   });
-  const [searchTerm, setSearchTerm] = useState("");
+
+  const [searchTerm, setSearchTerm] = useState(program || "");
   const [showFilter, setShowFilter] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const perPage = 6;
@@ -169,8 +190,33 @@ function Section2({ onCompare, isComparisonDisabled, isComparisonCleared }) {
 
   useEffect(() => {
     fetchAllPrograms();
+    fetchDropdowns();
+    fetchStatistics();
+    if (program) {
+      handleProgramSearch(program);
+    }
   }, []);
-
+  const handleProgramSearch = async (programName) => {
+    setLoading(true);
+    setErrorMessage(null);
+    setNotFound(false);
+    try {
+      const res = await axios.get(
+        `http://localhost:3000/api/programs/search/${encodeURIComponent(
+          programName
+        )}`,
+        authHeader
+      );
+      setUniversities(res.data);
+      setCurrentPage(1);
+      setNotFound(res.data.length === 0);
+    } catch (err) {
+      console.error(err);
+      setErrorMessage("Search failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
   const fetchAllPrograms = async () => {
     setLoading(true);
     setErrorMessage(null);
@@ -182,17 +228,39 @@ function Section2({ onCompare, isComparisonDisabled, isComparisonCleared }) {
       );
       const data = res.data;
       setUniversities(data);
-      setLocations([...new Set(data.map((p) => p.location))].sort());
-      setProgramsOffered([...new Set(data.map((p) => p.program_title))].sort());
-      setUniversityNames(
-        [...new Set(data.map((p) => p.university_title))].sort()
-      );
     } catch {
       setErrorMessage(
         "Unable to load universities at the moment. Please try again."
       );
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchDropdowns = async () => {
+    try {
+      const [locRes, progRes, uniRes] = await Promise.all([
+        axios.get("http://localhost:3000/api/locations", authHeader),
+        axios.get("http://localhost:3000/api/program-names", authHeader),
+        axios.get("http://localhost:3000/api/university-names", authHeader),
+      ]);
+      setLocations(locRes.data);
+      setProgramsOffered(progRes.data);
+      setUniversityNames(uniRes.data);
+    } catch (err) {
+      console.error("Dropdown fetching error", err);
+    }
+  };
+
+  const fetchStatistics = async () => {
+    try {
+      const res = await axios.get(
+        "http://localhost:3000/api/statistics",
+        authHeader
+      );
+      setStats(res.data);
+    } catch (err) {
+      console.error("Error fetching stats", err);
     }
   };
 
@@ -266,44 +334,50 @@ function Section2({ onCompare, isComparisonDisabled, isComparisonCleared }) {
     setNotFound(false);
 
     const params = new URLSearchParams();
+
     if (filters.location !== "all") params.append("location", filters.location);
     if (filters.program_title !== "all")
       params.append("program_title", filters.program_title);
     if (filters.university_title !== "all")
       params.append("university_title", filters.university_title);
-    if (filters.qs_ranking !== "all")
-      params.append("qs_ranking", filters.qs_ranking);
 
-    // Only include numeric min/max when complete or higher filter
-    if (
-      filters.min_total_fee !== "" &&
-      filters.max_total_fee !== "" &&
-      +filters.min_total_fee <= +filters.max_total_fee
-    )
-      params.append("min_total_fee", filters.min_total_fee) &&
-        params.append("max_total_fee", filters.max_total_fee);
+    const minFee = parseInt(filters.min_total_fee, 10);
+    const maxFee = parseInt(filters.max_total_fee, 10);
+    if (!isNaN(minFee) && minFee >= 0) {
+      params.append("min_total_fee", minFee.toString());
+    }
 
-    if (
-      filters.min_credit_fee !== "" &&
-      filters.max_credit_fee !== "" &&
-      +filters.min_credit_fee <= +filters.max_credit_fee
-    )
-      params.append("min_credit_fee", filters.min_credit_fee) &&
-        params.append("max_credit_fee", filters.max_credit_fee);
+    if (!isNaN(maxFee) && maxFee >= 0) {
+      params.append("max_total_fee", maxFee.toString());
+    }
+    if (!isNaN(minFee) && !isNaN(maxFee) && minFee > maxFee) {
+      setErrorMessage("Minimum fee must be less than maximum fee");
+      setLoading(false);
+      return;
+    }
+
+    console.log("Sending query params:", params.toString());
 
     try {
       const res = await axios.get(
-        `http://localhost:3000/api/programs/filter?${params}`,
+        `http://localhost:3000/api/programs/filter?${params.toString()}`,
         authHeader
       );
       setUniversities(res.data);
       setCurrentPage(1);
       setNotFound(res.data.length === 0);
       setShowFilter(false);
-    } catch {
-      setErrorMessage(
-        "Could not apply filters. Please review your selections."
-      );
+    } catch (err) {
+      console.error("Filter error:", err);
+      if (err.response?.status === 500) {
+        setErrorMessage(
+          "Server error occurred while applying filters. Please try different parameters."
+        );
+      } else {
+        setErrorMessage(
+          "Could not apply filters. Please review your selections."
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -313,14 +387,11 @@ function Section2({ onCompare, isComparisonDisabled, isComparisonCleared }) {
       location: "all",
       program_title: "all",
       university_title: "all",
-      qs_ranking: "all",
       min_total_fee: "",
       max_total_fee: "",
-      min_credit_fee: "",
-      max_credit_fee: "",
     });
     setSearchTerm("");
-    await fetchAllPrograms(); // This re-fetches all data from the database
+    await fetchAllPrograms();
     setCurrentPage(1);
     setShowFilter(false);
     setNotFound(false);
@@ -337,6 +408,11 @@ function Section2({ onCompare, isComparisonDisabled, isComparisonCleared }) {
 
   return (
     <div className="container custom-container border-bottom border-primary py-4 text-center">
+      {program && (
+        <h3 className="mb-4">
+          Showing results for: <span className="text-primary">{program}</span>
+        </h3>
+      )}
       {errorMessage && (
         <div className="alert alert-warning">{errorMessage}</div>
       )}
@@ -352,7 +428,7 @@ function Section2({ onCompare, isComparisonDisabled, isComparisonCleared }) {
             const value = e.target.value;
             setSearchTerm(value);
             if (value.trim() === "") {
-              fetchAllPrograms(); // Reload everything if input is cleared
+              fetchAllPrograms();
               setNotFound(false);
               setErrorMessage(null);
             }
@@ -370,7 +446,6 @@ function Section2({ onCompare, isComparisonDisabled, isComparisonCleared }) {
           Filters
         </button>
       </div>
-
       {/* Filter modal */}
       {showFilter && (
         <div className="modal-overlay">
@@ -428,25 +503,7 @@ function Section2({ onCompare, isComparisonDisabled, isComparisonCleared }) {
                   ))}
                 </select>
               </div>
-              <div className="col">
-                <label>QS Ranking</label>
-                <select
-                  className="form-select"
-                  value={filters.qs_ranking}
-                  onChange={(e) =>
-                    setFilters({ ...filters, qs_ranking: e.target.value })
-                  }
-                >
-                  <option value="all">All</option>
-                  {[...Array(10)].map((_, i) => (
-                    <option key={i + 1} value={i + 1}>
-                      {i + 1}
-                    </option>
-                  ))}
-                </select>
-              </div>
             </div>
-
             <div className="mb-3 text-start">
               <label>Total Fee Range (PKR)</label>
               <div className="d-flex gap-2">
@@ -455,50 +512,39 @@ function Section2({ onCompare, isComparisonDisabled, isComparisonCleared }) {
                   className="form-control"
                   placeholder="Min"
                   min="0"
+                  step="1000"
                   value={filters.min_total_fee}
-                  onChange={(e) =>
-                    setFilters({ ...filters, min_total_fee: e.target.value })
-                  }
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === "" || /^\d+$/.test(value)) {
+                      setFilters({ ...filters, min_total_fee: value });
+                    }
+                  }}
                 />
                 <input
                   type="number"
                   className="form-control"
                   placeholder="Max"
                   min="0"
+                  step="1000"
                   value={filters.max_total_fee}
-                  onChange={(e) =>
-                    setFilters({ ...filters, max_total_fee: e.target.value })
-                  }
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === "" || /^\d+$/.test(value)) {
+                      setFilters({ ...filters, max_total_fee: value });
+                    }
+                  }}
                 />
               </div>
+              {filters.min_total_fee &&
+                filters.max_total_fee &&
+                parseInt(filters.min_total_fee) >
+                  parseInt(filters.max_total_fee) && (
+                  <div className="mt-1 text-warning">
+                    Minimum fee must be less than maximum fee
+                  </div>
+                )}
             </div>
-
-            <div className="mb-3 text-start">
-              <label>Credit Fee Range (PKR)</label>
-              <div className="d-flex gap-2">
-                <input
-                  type="number"
-                  className="form-control"
-                  placeholder="Min"
-                  min="0"
-                  value={filters.min_credit_fee}
-                  onChange={(e) =>
-                    setFilters({ ...filters, min_credit_fee: e.target.value })
-                  }
-                />
-                <input
-                  type="number"
-                  className="form-control"
-                  placeholder="Max"
-                  min="0"
-                  value={filters.max_credit_fee}
-                  onChange={(e) =>
-                    setFilters({ ...filters, max_credit_fee: e.target.value })
-                  }
-                />
-              </div>
-            </div>
-
             <div className="text-center">
               <button className="btn btn-primary me-2" onClick={handleFilter}>
                 Apply Filters

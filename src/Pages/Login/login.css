@@ -33,6 +33,24 @@ border-bottom-right-radius: .3rem;
         color: lightgray!important; /* White color to ensure visibility */
         opacity: 1; /* Full opacity */
       }
-      
+.email-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
 
-     
+.email-dialog {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 400px;
+  color: black;
+}

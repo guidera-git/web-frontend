@@ -21,6 +21,10 @@ import SubjectCard from "./components/card/SubjectCard";
 import QuestionBank from "./components/Question/QuestionBank";
 import ProfilePage from "./Pages/Profile/Profile";
 import Form from "./Pages/Form/Form";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import DegreeRecommendation from "./Pages/DegreeRecommend/DegreeRecommendation";
+import SavedPrograms from "./Pages/SavedPrograms/SavedPrograms";
 
 // ✅ Token check helper
 function isTokenExpired(token) {
@@ -75,6 +79,8 @@ const router = createBrowserRouter([
       { path: "/tracking", element: <TrackingAnalysis /> },
       { path: "/", element: <SubjectCard /> },
       { path: "/quiz/:subject", element: <QuestionBank /> },
+      { path: "/degree-recommendation", element: <DegreeRecommendation /> },
+      { path: "/saved", element: <SavedPrograms /> },
     ],
   },
   { path: "/signup", element: <Signup /> },
@@ -87,6 +93,18 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <ThemeProvider>
       <RouterProvider router={router} />
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </ThemeProvider>
   </StrictMode>
 );

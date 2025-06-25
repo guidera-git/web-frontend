@@ -4,8 +4,7 @@ import "./Footer.css";
 
 import { ThemeContext } from "../../ThemeContext";
 function Footer() {
-
-  const { theme } = useContext(ThemeContext); // <-- Add this line
+  const { theme } = useContext(ThemeContext);
   return (
     <div className="container-fluid p-0">
       <footer className="custom-footer d-flex flex-column">
@@ -16,20 +15,38 @@ function Footer() {
               className="d-flex align-items-center mb-3 link-light text-decoration-none"
             >
               <img
-                src={theme === "light" ? "/guidera_logo_white.PNG" : "/guidera_logo_dark.PNG"}
+                src={
+                  theme === "light"
+                    ? "/guidera_logo_white.PNG"
+                    : "/guidera_logo_dark.PNG"
+                }
                 alt="Guidera Logo"
                 width="70"
                 height="45"
               />
             </a>
             <div className="d-flex">
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="me-3">
+              <a
+                href="https://twitter.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="me-3"
+              >
                 <i className="bi bi-twitter social-icon"></i>
               </a>
-              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="me-3">
+              <a
+                href="https://facebook.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="me-3"
+              >
                 <i className="bi bi-facebook social-icon"></i>
               </a>
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
+              <a
+                href="https://instagram.com"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <i className="bi bi-instagram social-icon"></i>
               </a>
             </div>
@@ -37,10 +54,16 @@ function Footer() {
 
           <div className="col mb-3">
             <ul className="nav flex-column">
-              {["Home", "Services", "Chatbot AI", "Contact Us", "About Us"].map((item) => (
-                <li key={item} className="nav-item mb-2">
-                  <a href="#" className="nav-link p-0 footer-link">
-                    {item}
+              {[
+                { name: "Home", path: "/" },
+                { name: "Services", path: "#" },
+                { name: "Chatbot AI", path: "/chatbot" },
+                { name: "Contact Us", path: "/contactus" },
+                { name: "About Us", path: "/aboutus" },
+              ].map((item) => (
+                <li key={item.name} className="nav-item mb-2">
+                  <a href={item.path} className="nav-link p-0 footer-link">
+                    {item.name}
                   </a>
                 </li>
               ))}
@@ -49,7 +72,13 @@ function Footer() {
 
           <div className="col mb-3">
             <ul className="nav flex-column">
-              {["Pricing", "Privacy Policy", "Terms & Conditions", "Cookies", "Help"].map((item) => (
+              {[
+                "Pricing",
+                "Privacy Policy",
+                "Terms & Conditions",
+                "Cookies",
+                "Help",
+              ].map((item) => (
                 <li key={item} className="nav-item mb-2">
                   <a href="#" className="nav-link p-0 footer-link">
                     {item}

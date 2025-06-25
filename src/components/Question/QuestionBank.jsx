@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Question from "./Question";
-import ResultsScreen from "./ResultScreen"; // Extracted to separate component
+import ResultsScreen from "./ResultScreen";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { ThemeContext } from "../../ThemeContext"; // Adjust path as needed
 
-// Or use this arrow function version
 const apiService = {
   baseURL: "http://localhost:3000/api/tests",
 
@@ -20,7 +20,7 @@ const apiService = {
       `${apiService.baseURL}/${subject.toUpperCase()}`,
       apiService.getConfig()
     );
-    return response.data; // Will now include expectedCount
+    return response.data;
   },
   submitTest: async (attemptId, answers) => {
     const response = await axios.post(
@@ -41,10 +41,10 @@ const apiService = {
 };
 
 function QuestionBank() {
+  const { theme } = useContext(ThemeContext);
   const { subject } = useParams();
   const navigate = useNavigate();
 
-  // State management
   const [state, setState] = useState({
     questions: [],
     answers: {},
@@ -57,12 +57,10 @@ function QuestionBank() {
     expectedCount: null,
   });
 
-  // Helper to update state without losing other values
   const updateState = (updates) => {
     setState((prev) => ({ ...prev, ...updates }));
   };
 
-  // Fetch questions when component mounts or subject changes
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
@@ -72,7 +70,7 @@ function QuestionBank() {
           questions: fetchedQuestions,
           attemptId,
           startedAt,
-          expectedCount, // Get from backend
+          expectedCount,
         } = await apiService.startTest(subject);
 
         updateState({
@@ -114,13 +112,11 @@ function QuestionBank() {
     }
 
     try {
-      // Submit answers to backend
       const { total, correct, score } = await apiService.submitTest(
         state.attemptId,
         state.answers
       );
 
-      // Get detailed results from backend
       const { attempt, results: detailedResults } = await apiService.getResults(
         state.attemptId
       );
@@ -144,7 +140,6 @@ function QuestionBank() {
     }
   };
 
-  // Grade calculation helper
   const calculateGrade = (percentage) => {
     if (percentage >= 90) return "A";
     if (percentage >= 80) return "B";
@@ -163,7 +158,11 @@ function QuestionBank() {
 
   if (state.loading) {
     return (
-      <div className="container mt-4 text-center">
+      <div
+        className={`container mt-4 text-center ${
+          theme === "dark" ? "bg-dark text-white" : ""
+        }`}
+      >
         <div className="spinner-border text-primary" role="status">
           <span className="visually-hidden">Loading...</span>
         </div>
@@ -172,7 +171,6 @@ function QuestionBank() {
     );
   }
 
-  // Render results screen - FIXED SECTION
   if (state.submitted && state.results) {
     return (
       <ResultsScreen
@@ -181,28 +179,38 @@ function QuestionBank() {
         onTryAgain={handleTryAgain}
         onBackToSubjects={handleBackToSubjects}
         expectedCount={state.expectedCount}
+        theme={theme}
       />
     );
   }
 
-  // Render main quiz interface
   return (
-    <div className="container mt-4">
-      <h2 className="text-center text-primary">
+    <div
+      className={`container mt-4 ${
+        theme === "dark" ? "bg-dark text-white" : ""
+      }`}
+    >
+      <h2
+        className={`text-center ${
+          theme === "dark" ? "text-light" : "text-primary"
+        }`}
+      >
         {subject.charAt(0).toUpperCase() + subject.slice(1)} Quiz
-        {state.expectedCount ? (
-          <small>
-            ({state.questions.length}/{state.expectedCount})
-          </small>
-        ) : null}
+        {state.expectedCount ? <small>({state.questions.length})</small> : null}
       </h2>
 
       {state.error && (
-        <div className="alert alert-warning text-center">
+        <div
+          className={`alert ${
+            theme === "dark" ? "alert-dark" : "alert-warning"
+          } text-center`}
+        >
           {state.error}
           {state.questions.length > 0 && (
             <button
-              className="btn btn-sm btn-outline-secondary ms-2"
+              className={`btn btn-sm ms-2 ${
+                theme === "dark" ? "btn-outline-light" : "btn-outline-secondary"
+              }`}
               onClick={() => updateState({ error: "" })}
             >
               Continue
@@ -222,6 +230,7 @@ function QuestionBank() {
                 totalQuestions={state.expectedCount}
                 onAnswerChange={handleAnswerChange}
                 selectedAnswer={state.answers[q.id]}
+                theme={theme}
               />
             ))}
           </div>
@@ -240,7 +249,7 @@ function QuestionBank() {
         </>
       ) : (
         <div className="text-center mt-5">
-          <p className="text-danger">
+          <p className={theme === "dark" ? "text-warning" : "text-danger"}>
             No questions available for this subject.
           </p>
           <button

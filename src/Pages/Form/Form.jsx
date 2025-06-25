@@ -195,40 +195,14 @@ const Form = () => {
       </div>
     </div>
   );
-
   if (predictionResult) {
-    return (
-      <div className="container py-4 text-center">
-        <h2 className="text-primary mb-4">Degree Recommendation</h2>
-        <div className="card mx-auto" style={{ maxWidth: "600px" }}>
-          <div className="card-header bg-primary text-white">
-            <h3>Your Ideal Degree</h3>
-          </div>
-          <div className="card-body">
-            <h4 className="text-success">
-              {predictionResult.predicted_degree}
-            </h4>
-            <p>
-              Confidence: {(predictionResult.confidence_score * 100).toFixed(1)}
-              %
-            </p>
-            <button
-              className="btn btn-primary mt-3"
-              onClick={() => setPredictionResult(null)}
-            >
-              Back to Form
-            </button>
-          </div>
-        </div>
-      </div>
-    );
+    navigate("/degree-recommendation", { state: { predictionResult } });
+    return null;
   }
 
   return (
     <div className="container py-4">
-      <h1 className="text-center mb-4 text-primary">
-        Guidera
-      </h1>
+      <h1 className="text-center mb-4 text-primary">Guidera</h1>
 
       {error && <div className="alert alert-danger">{error}</div>}
 
@@ -236,8 +210,9 @@ const Form = () => {
         {["academic", "personality"].map((section) => (
           <button
             key={section}
-            className={`btn ${activeSection === section ? "btn-primary" : "btn-outline-primary"
-              } mx-2`}
+            className={`btn ${
+              activeSection === section ? "btn-primary" : "btn-outline-primary"
+            } mx-2`}
             onClick={() => setActiveSection(section)}
           >
             {section.charAt(0).toUpperCase() + section.slice(1)}

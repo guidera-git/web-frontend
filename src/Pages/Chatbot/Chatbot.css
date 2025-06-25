@@ -7,3 +7,18 @@
   
       
 }
+/* Chatbot.css */
+.hover-effect{
+  background-color: #e9ecef !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+/* Dark mode support */
+.dark .hover-effect{
+  background-color: #4a5568 !important;
+}

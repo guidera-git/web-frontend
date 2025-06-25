@@ -9,7 +9,6 @@ import { Carousel } from "react-bootstrap";
 function AboutUs() {
   const { theme } = useContext(ThemeContext);
   return (
-
     <div className={`find-university ${theme}`}>
       <Section1></Section1>
       <Section2></Section2>
@@ -24,7 +23,7 @@ function Section1() {
         <div className="header text-center text-white">
           <div className="container">
             <h1 className="heading-title">
-              Your <span className="text-primary">Academic</span> Partner
+              <span className="text-primary">Your Academic Partner</span>
             </h1>
             <h4 className="sub-heading">
               Guidera is here to guide your academic journey with AI-powered

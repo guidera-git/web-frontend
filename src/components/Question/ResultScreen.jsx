@@ -8,16 +8,11 @@ const ResultsScreen = ({
   onBackToSubjects,
   expectedCount = 5,
 }) => {
-  // Calculate incorrect answers count if not provided
   const incorrect = results.total - results.correct;
-  const [expandedQuestionId, setExpandedQuestionId] = useState(null);
+  const [showAllAnswers, setShowAllAnswers] = useState(false);
 
-  const toggleQuestionDetail = (questionId) => {
-    if (expandedQuestionId === questionId) {
-      setExpandedQuestionId(null);
-    } else {
-      setExpandedQuestionId(questionId);
-    }
+  const toggleShowAllAnswers = () => {
+    setShowAllAnswers(!showAllAnswers);
   };
 
   return (
@@ -102,8 +97,22 @@ const ResultsScreen = ({
         </div>
       </div>
 
-      {/* Detailed results section */}
+      {/* Show Answers button */}
       {detailedResults && (
+        <div className="mt-4">
+          <button
+            className={`btn ${
+              showAllAnswers ? "btn-secondary" : "btn-primary"
+            } px-4 py-2`}
+            onClick={toggleShowAllAnswers}
+          >
+            {showAllAnswers ? "Hide Answers" : "Show Answers"}
+          </button>
+        </div>
+      )}
+
+      {/* Detailed results section - Shows all when button is clicked */}
+      {showAllAnswers && detailedResults && (
         <div
           className="mt-5 text-start"
           style={{ maxWidth: "800px", margin: "0 auto" }}
@@ -120,36 +129,19 @@ const ResultsScreen = ({
                 <h5 className="card-title">Question {index + 1}</h5>
                 <p className="card-text">{result.question}</p>
 
-                {expandedQuestionId === result.id && (
-                  <>
-                    <div className="mb-2">
-                      <strong>Your answer:</strong>{" "}
-                      {result.selected_ans || "Not answered"}
-                    </div>
-                    <div className="mb-2">
-                      <strong>Correct answer:</strong> {result.correct_ans}
-                    </div>
+                <div className="mb-2">
+                  <strong>Your answer:</strong>{" "}
+                  {result.selected_ans || "Not answered"}
+                </div>
+                <div className="mb-2">
+                  <strong>Correct answer:</strong> {result.correct_ans}
+                </div>
 
-                    {result.explanation && (
-                      <div className="alert alert-light mt-2">
-                        <strong>Explanation:</strong> {result.explanation}
-                      </div>
-                    )}
-                  </>
+                {result.explanation && (
+                  <div className="alert alert-light mt-2">
+                    <strong>Explanation:</strong> {result.explanation}
+                  </div>
                 )}
-
-                <button
-                  className={`btn btn-sm ${
-                    expandedQuestionId === result.id
-                      ? "btn-outline-secondary"
-                      : "btn-outline-primary"
-                  } mt-2`}
-                  onClick={() => toggleQuestionDetail(result.id)}
-                >
-                  {expandedQuestionId === result.id
-                    ? "Hide Detail"
-                    : "Show Detail"}
-                </button>
               </div>
             </div>
           ))}

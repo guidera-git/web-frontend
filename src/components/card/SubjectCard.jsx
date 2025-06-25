@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useNavigate } from "react-router-dom";
 import "./card.css";
+import { ThemeContext } from "../../ThemeContext"; // Adjust path as needed
 
 function SubjectCard() {
+  const { theme } = useContext(ThemeContext);
   const navigate = useNavigate();
   const subjects = [
     { title: "Biology", icon: "/person_cat.jpg", color: "#ffffff" },
@@ -49,11 +51,17 @@ function SubjectCard() {
   );
 
   return (
-    <div className="py-4 d-flex flex-column align-items-center custom-container border-bottom border-2 border-primary text-white">
+    <div
+      className={`py-4 d-flex flex-column align-items-center border-bottom border-2 border-primary ${
+        theme === "dark" ? "bg-dark text-white" : "bg-light text-dark"
+      }`}
+    >
       <h1 className="text-center mb-4">Subject Based Preparation</h1>
       <div className="slider-container position-relative d-flex justify-content-center w-100">
         <button
-          className="arrow-btn left position-absolute start-0 top-50 translate-middle-y ms-3"
+          className={`arrow-btn left position-absolute start-0 top-50 translate-middle-y ms-3 ${
+            theme === "dark" ? "text-light" : "text-dark"
+          }`}
           onClick={handlePrev}
           style={{ zIndex: 10 }}
         >
@@ -66,12 +74,14 @@ function SubjectCard() {
           {currentVisibleCards.map((subject, idx) => (
             <div
               key={idx}
-              className="scroll-item p-4 mx-3 d-flex flex-column justify-content-between rounded-4 shadow-lg"
+              className={`scroll-item p-4 mx-3 d-flex flex-column justify-content-between rounded-4 shadow-lg ${
+                theme === "dark" ? "border border-secondary" : ""
+              }`}
               style={{
                 backgroundColor: subject.color,
                 width: "250px",
                 height: "200px",
-                color: "white",
+                color: theme === "dark" ? "white" : "black",
                 transition: "transform 0.5s ease-in-out",
               }}
               onClick={() => handleSelectSubject(subject)}
@@ -82,7 +92,7 @@ function SubjectCard() {
                   style={{
                     backgroundColor:
                       subject.color === "#ffffff" ? "#0d6efd" : "#ffffff",
-                    color: subject.color,
+                    color: subject.color === "#ffffff" ? "white" : "#0d6efd",
                   }}
                 >
                   {subject.title}
@@ -110,7 +120,9 @@ function SubjectCard() {
           ))}
         </div>
         <button
-          className="arrow-btn right position-absolute end-0 top-50 translate-middle-y me-3"
+          className={`arrow-btn right position-absolute end-0 top-50 translate-middle-y me-3 ${
+            theme === "dark" ? "text-light" : "text-dark"
+          }`}
           onClick={handleNext}
           style={{ zIndex: 10 }}
         >
@@ -121,7 +133,9 @@ function SubjectCard() {
         {subjects.map((_, idx) => (
           <span
             key={idx}
-            className={`dot ${idx === index ? "active" : ""}`}
+            className={`dot ${idx === index ? "active" : ""} ${
+              theme === "dark" ? "dot-dark" : ""
+            }`}
             onClick={() => setIndex(idx)}
           ></span>
         ))}

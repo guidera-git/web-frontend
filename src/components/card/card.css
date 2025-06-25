@@ -80,4 +80,53 @@
   .arrow-btn {
     font-size: 1.2rem;
   }
+} 
+.bg-dark .scroll-item {
+  box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1) !important;
+}
+
+.dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #ccc;
+  margin: 0 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.dot.active {
+  background-color: #0d6efd;
+}
+
+.dot-dark {
+  background-color: #555;
+}
+
+.dot-dark.active {
+  background-color: #0d6efd;
+}
+
+/* Arrow buttons hover effect */
+.arrow-btn:hover {
+  opacity: 0.8;
+}
+
+/* Card hover effect */
+.scroll-item:hover {
+  transform: translateY(-5px) !important;
+  cursor: pointer;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .scroll-item {
+    width: 200px !important;
+    height: 180px !important;
+  }
+  
+  .arrow-btn {
+    font-size: 1.5rem !important;
+  }
 }

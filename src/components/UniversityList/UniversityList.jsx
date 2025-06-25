@@ -13,6 +13,8 @@ import {
   Spinner,
 } from "react-bootstrap";
 import axios from "axios";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const UniversityList = ({
   university,
@@ -26,39 +28,157 @@ const UniversityList = ({
   const [showModal, setShowModal] = useState(false);
   const [programDetails, setProgramDetails] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [savedId, setSavedId] = useState(null);
+  const [applicationStarted, setApplicationStarted] = useState(false);
 
   const universityId =
     university?.university_id || university?.id || university?.uid;
-
-  // Load bookmark from localStorage
+  const token = localStorage.getItem("token");
+  const authHeader = { headers: { Authorization: `Bearer ${token}` } };
+  const programId = university.program_id;
   useEffect(() => {
-    const storedBookmarks = JSON.parse(
-      localStorage.getItem("bookmarkedUniversities") || "{}"
-    );
-
-    if (universityId && storedBookmarks[universityId]) {
-      setIsBookmarked(true);
+    if (programId && token) {
+      checkIfProgramIsSaved();
     }
-  }, [universityId]);
+  }, [programId, token]);
 
-  // Reset comparison toggle if cleared from parent
-  useEffect(() => {
-    if (isComparisonCleared) {
-      setIsSelectedForComparison(false);
-    }
-  }, [isComparisonCleared]);
+  const checkIfProgramIsSaved = async () => {
+    try {
+      const res = await axios.get(
+        `http://localhost:3000/api/saved-programs/check/${programId}`,
+        authHeader
+      );
 
-  const toggleBookmark = () => {
-    const stored = JSON.parse(
-      localStorage.getItem("bookmarkedUniversities") || "{}"
-    );
-    if (isBookmarked) {
-      delete stored[universityId];
-    } else {
-      stored[universityId] = university;
+      const isSaved = res.data.is_saved;
+      if (isSaved) {
+        const allSaved = await axios.get(
+          "http://localhost:3000/api/saved-programs",
+          authHeader
+        );
+        const match = allSaved.data.find(
+          (item) => item.program_id === programId
+        );
+        setSavedId(match?.saved_id || null);
+      } else {
+        setSavedId(null);
+      }
+
+      setIsBookmarked(isSaved);
+    } catch (error) {
+      console.error("Error checking saved status:", error);
     }
-    localStorage.setItem("bookmarkedUniversities", JSON.stringify(stored));
-    setIsBookmarked(!isBookmarked);
+  };
+  // 👇 Add this new state
+  const [showAppPrompt, setShowAppPrompt] = useState(false);
+
+  // 👇 Replace only the toggleBookmark logic with this version:
+  const toggleBookmark = async () => {
+    if (!token) {
+      toast.error("Please log in to save programs.");
+      return;
+    }
+
+    try {
+      if (isBookmarked && savedId) {
+        // Unbookmark logic
+        await axios.delete(
+          `http://localhost:3000/api/saved-programs/${savedId}`,
+          authHeader
+        );
+        setIsBookmarked(false);
+        setSavedId(null);
+        toast.info("Removed from bookmarks.");
+      } else {
+        // Save logic
+        const payload = {
+          program_id: programId,
+          university_id: universityId,
+        };
+
+        const res = await axios.post(
+          "http://localhost:3000/api/saved-programs",
+          payload,
+          authHeader
+        );
+
+        const savedProgram = res.data.saved_program;
+        if (savedProgram?.id) {
+          setIsBookmarked(true);
+          setSavedId(savedProgram.id);
+          toast.success("Bookmarked successfully.");
+
+          // 🔔 Show Bootstrap modal instead of window.confirm
+          setShowAppPrompt(true);
+        } else {
+          throw new Error("Invalid save response format.");
+        }
+      }
+    } catch (error) {
+      console.error("Bookmark error:", error);
+      if (error.response?.status === 400) {
+        toast.error(error.response.data?.error || "Already bookmarked.");
+      } else {
+        toast.error("Failed to update bookmark.");
+      }
+    }
+  };
+
+  const handleStartApplication = async () => {
+    if (!token) {
+      toast.error("You must be logged in to start an application.");
+      return;
+    }
+
+    if (!programId || !universityId) {
+      toast.error("Missing program or university ID.");
+      setShowAppPrompt(false);
+      return;
+    }
+
+    try {
+      console.log("📌 Checking existing application...");
+      const checkRes = await axios.get(
+        `http://localhost:3000/api/applications/check/${programId}/${universityId}`,
+        authHeader
+      );
+
+      if (!checkRes.data.exists) {
+        const appPayload = {
+          program_id: programId,
+          university_id: universityId,
+        };
+
+        console.log("📤 Sending application payload:", appPayload);
+
+        const createRes = await axios.post(
+          "http://localhost:3000/api/applications",
+          appPayload,
+          authHeader
+        );
+
+        if (createRes.status === 201) {
+          toast.success(
+            "Application started successfully. Deadlines will be tracked."
+          );
+        } else {
+          toast.error("Unexpected response from server.");
+        }
+      } else {
+        toast.info("You already have an application for this program.");
+      }
+    } catch (error) {
+      console.error("❌ Application creation error:", error);
+
+      if (error.response?.status === 400) {
+        toast.error(error.response?.data?.error || "Bad Request.");
+      } else if (error.response?.status === 401) {
+        toast.error("Unauthorized. Please log in again.");
+      } else {
+        toast.error("Something went wrong. Please try again.");
+      }
+    } finally {
+      setShowAppPrompt(false);
+    }
   };
 
   const handleComparisonClick = () => {
@@ -66,10 +186,6 @@ const UniversityList = ({
     setIsSelectedForComparison((prev) => !prev);
     onCompare(university);
   };
-
-  const token = localStorage.getItem("token");
-  const authHeader = { headers: { Authorization: `Bearer ${token}` } };
-  const programId = university.program_id;
 
   const handleShowModal = async () => {
     setShowModal(true);
@@ -88,21 +204,90 @@ const UniversityList = ({
       }
     }
   };
+  const checkAndSetApplicationStatus = async () => {
+    if (!token || !programId || !universityId) return;
+
+    try {
+      const res = await axios.get(
+        `http://localhost:3000/api/applications/check/${programId}/${universityId}`,
+        authHeader
+      );
+      setApplicationStarted(res.data.exists);
+    } catch (error) {
+      console.error("Error checking application status:", error);
+    }
+  };
+  useEffect(() => {
+    checkAndSetApplicationStatus();
+  }, [programId, universityId]);
+  const handleApply = async () => {
+    if (!token) {
+      toast.error("Please log in to apply.");
+      return;
+    }
+
+    try {
+      const checkRes = await axios.get(
+        `http://localhost:3000/api/applications/check/${programId}/${universityId}`,
+        authHeader
+      );
+
+      if (!checkRes.data.exists) {
+        const res = await axios.post(
+          `http://localhost:3000/api/applications`,
+          { program_id: programId, university_id: universityId },
+          authHeader
+        );
+
+        if (res.status === 201) {
+          toast.success("✅ Application started successfully!");
+          setApplicationStarted(true);
+        } else {
+          toast.error("⚠️ Unexpected error occurred.");
+        }
+      } else {
+        toast.info("ℹ️ You already have an application for this program.");
+        setApplicationStarted(true);
+      }
+    } catch (err) {
+      console.error("❌ Error starting application:", err);
+      toast.error("Something went wrong. Try again later.");
+    }
+  };
 
   const handleCloseModal = () => {
     setShowModal(false);
   };
 
-  // Helper to get data - uses API data if available, falls back to props
   const getData = (key) => {
-    return programDetails?.[key] || university?.[key];
+    return programDetails?.[key] ?? university?.[key] ?? "N/A";
   };
 
   if (!university) return null;
 
   return (
     <>
-      {/* University Card - uses only props data */}
+      <Modal
+        show={showAppPrompt}
+        onHide={() => setShowAppPrompt(false)}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Start Application</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Would you like to start the application to receive deadlines for this
+          university program?
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowAppPrompt(false)}>
+            No
+          </Button>
+          <Button variant="primary" onClick={handleStartApplication}>
+            Yes, Start
+          </Button>
+        </Modal.Footer>
+      </Modal>
       <div
         className={`university-card container p-4 rounded shadow-lg ${
           theme === "dark" ? "bg-dark text-light" : "bg-light text-dark"
@@ -159,6 +344,18 @@ const UniversityList = ({
         </div>
 
         <div className="row">
+          <div className="col-12 mt-3 text-end">
+            <button
+              className={`btn ${
+                applicationStarted ? "btn-outline-success" : "btn-primary"
+              }`}
+              onClick={handleApply}
+              title="Start application to get deadlines"
+            >
+              {applicationStarted ? "Started" : "Apply"}
+            </button>
+          </div>
+
           <div className="col-6">
             <p className="mb-1">Degree</p>
             <h6 className="fw-bold">
@@ -184,7 +381,10 @@ const UniversityList = ({
             </h6>
             <p className="mb-1">Total Fee</p>
             <h6 className="fw-bold mt-1">
-              {university.fee[0].total_tution_fee || "N/A"}
+              {Array.isArray(university?.fee) &&
+              university.fee[0]?.total_tution_fee
+                ? university.fee[0].total_tution_fee
+                : "N/A"}
             </h6>
           </div>
         </div>
@@ -233,8 +433,99 @@ const UniversityList = ({
                           getData("overview") ||
                           "No overview available."}
                       </p>
+                      <p className="mb-1">
+                        <strong>Total Fee: </strong>
+
+                        {Array.isArray(university?.fee) &&
+                        university.fee[0]?.total_tution_fee
+                          ? university.fee[0].total_tution_fee
+                          : "N/A"}
+                      </p>
+                      <p>
+                        <strong>Credit Hours:</strong>{" "}
+                        {getData("credit_hours") || "N/A"}
+                      </p>
+                      <p>
+                        <strong>Duration:</strong>{" "}
+                        {getData("program_duration") || "N/A"}
+                      </p>
+                      <p>
+                        <strong>Location: </strong>
+                        {getData("location") || "N/A"}
+                      </p>
+                      <p>
+                        <strong>Additional Locations:</strong>{" "}
+                        {getData("additional_locations") ||
+                          "No additional locations"}
+                      </p>
+                      <p>
+                        <strong>
+                          QS Ranking: {getData("qs_ranking") || "N/A"}
+                        </strong>
+                      </p>
                     </Tab.Pane>
                     <Tab.Pane eventKey="courseDetails">
+                      <h5 className="mt-3">Course Details</h5>
+                      <ListGroup>
+                        <ListGroup.Item>
+                          <strong>Program Title:</strong>{" "}
+                          {getData("program_title") || "N/A"}
+                        </ListGroup.Item>
+                        <ListGroup.Item>
+                          <strong>Credit Hours:</strong>{" "}
+                          {getData("credit_hours") || "N/A"}
+                        </ListGroup.Item>
+                        <ListGroup.Item>
+                          <strong>Duration:</strong>{" "}
+                          {getData("program_duration") || "N/A"}
+                        </ListGroup.Item>
+                        <ListGroup.Item>
+                          <strong>Teaching System:</strong>{" "}
+                          {getData("teaching_system") || "N/A"}
+                        </ListGroup.Item>
+                        <ListGroup.Item>
+                          <strong>Description:</strong>{" "}
+                          {getData("program_description") || "N/A"}
+                        </ListGroup.Item>
+                        <ListGroup.Item>
+                          <strong>Course Outline:</strong>{" "}
+                          {!getData("course_outline") ? (
+                            "Not provided"
+                          ) : (
+                            <a
+                              href={getData("course_outline")}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              View Outline
+                            </a>
+                          )}
+                        </ListGroup.Item>
+                      </ListGroup>
+                    </Tab.Pane>
+
+                    <Tab.Pane eventKey="requirements">
+                      <h5>Admission Requirements</h5>
+                      <ListGroup>
+                        {Array.isArray(getData("admission_criteria")) &&
+                        getData("admission_criteria").length > 0 ? (
+                          getData("admission_criteria").map((item, i) =>
+                            typeof item === "object" ? (
+                              <ListGroup.Item key={i}>
+                                {item.criteria ||
+                                  item["s.no"] ||
+                                  JSON.stringify(item)}
+                              </ListGroup.Item>
+                            ) : (
+                              <ListGroup.Item key={i}>{item}</ListGroup.Item>
+                            )
+                          )
+                        ) : (
+                          <ListGroup.Item>No criteria</ListGroup.Item>
+                        )}
+                      </ListGroup>
+                    </Tab.Pane>
+                    <Tab.Pane eventKey="registration">
                       <h5>Important Dates</h5>
                       <ListGroup>
                         {Array.isArray(getData("important_dates")) &&
@@ -274,41 +565,6 @@ const UniversityList = ({
                         )}
                       </ListGroup>
 
-                      <h5 className="mt-3">Course Outline</h5>
-                      {!getData("course_outline") ? (
-                        <p>Not provided</p>
-                      ) : (
-                        <a
-                          href={getData("course_outline")}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          View Outline
-                        </a>
-                      )}
-                    </Tab.Pane>
-                    <Tab.Pane eventKey="requirements">
-                      <h5>Admission Requirements</h5>
-                      <ListGroup>
-                        {Array.isArray(getData("admission_criteria")) &&
-                        getData("admission_criteria").length > 0 ? (
-                          getData("admission_criteria").map((item, i) =>
-                            typeof item === "object" ? (
-                              <ListGroup.Item key={i}>
-                                {item.criteria ||
-                                  item["s.no"] ||
-                                  JSON.stringify(item)}
-                              </ListGroup.Item>
-                            ) : (
-                              <ListGroup.Item key={i}>{item}</ListGroup.Item>
-                            )
-                          )
-                        ) : (
-                          <ListGroup.Item>No criteria</ListGroup.Item>
-                        )}
-                      </ListGroup>
-                    </Tab.Pane>
-                    <Tab.Pane eventKey="registration">
                       <h5>Teaching System</h5>
                       <p>
                         {getData("teaching_system") || "No registration info."}
@@ -320,22 +576,43 @@ const UniversityList = ({
                         {getData("fee") &&
                         Array.isArray(getData("fee")) &&
                         getData("fee").length > 0 ? (
-                          Object.entries(getData("fee")[0]).map(
-                            ([key, val]) => (
-                              <ListGroup.Item key={key}>
-                                <strong>{key}:</strong> {val}
-                              </ListGroup.Item>
-                            )
-                          )
+                          <>
+                            {Object.entries(getData("fee")[0]).map(
+                              ([key, val]) => (
+                                <ListGroup.Item key={key}>
+                                  <strong>{key}:</strong> {val}
+                                </ListGroup.Item>
+                              )
+                            )}
+                            <ListGroup.Item>
+                              <strong>Credit Hours:</strong>{" "}
+                              {getData("credit_hours")}
+                            </ListGroup.Item>
+                          </>
                         ) : (
                           <ListGroup.Item>No fee info</ListGroup.Item>
                         )}
                       </ListGroup>
                     </Tab.Pane>
+
                     <Tab.Pane eventKey="about">
-                      <h5>About {getData("university_title")}</h5>
+                      <h5>{getData("university_title")}</h5>
                       <p>
                         {getData("introduction") || "No information available."}
+                      </p>
+                      <p>
+                        <strong>Location: </strong>
+                        {getData("location") || "N/A"}
+                      </p>
+                      <p>
+                        <strong>Additional Locations:</strong>{" "}
+                        {getData("additional_locations") ||
+                          "No additional locations"}
+                      </p>
+                      <p>
+                        <strong>
+                          QS Ranking: {getData("qs_ranking") || "N/A"}
+                        </strong>
                       </p>
                       <p>
                         <strong>Contact:</strong>
@@ -358,9 +635,33 @@ const UniversityList = ({
                           </>
                         ) : null}
                       </p>
+                      <p>
+                        <strong>Social Links:</strong>
+                        <br />
+                        {getData("social_links")
+                          ? Object.entries(getData("social_links")).map(
+                              ([key, value]) => (
+                                <span key={key}>
+                                  <strong>
+                                    {key.charAt(0).toUpperCase() + key.slice(1)}
+                                    :
+                                  </strong>{" "}
+                                  <a
+                                    href={value}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    {value}
+                                  </a>
+                                  <br />
+                                </span>
+                              )
+                            )
+                          : "No social links"}
+                      </p>
 
                       <div className="text-break">
-                        <strong>Campuses:</strong>
+                        <strong>Campuses Location:</strong>
                         <ul className="mt-2">
                           {getData("campuses") &&
                             typeof getData("campuses") === "object" &&

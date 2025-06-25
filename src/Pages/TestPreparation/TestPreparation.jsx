@@ -1,33 +1,41 @@
-import Footer from "../../components/Footer/Footer";
 import "bootstrap/dist/css/bootstrap.min.css";
-import NavigationBar from "../../components/NavigationBar/NavigationBar";
-import "./TestPreparation.css";
-import React from "react";
-import { useState } from "react";
+import React, { useState, useContext } from "react"; // Added useState here
+import { ThemeContext } from "../../ThemeContext"; // Adjust path as needed
 import SubjectCard from "../../components/card/SubjectCard";
 
 function TestPreparation() {
   return (
     <>
-      <Section1></Section1>
-      <Section2></Section2>
-      <Section3></Section3>
-      <Section4></Section4>
+      <Section1 />
+      <Section2 />
+      <Section3 />
+      <Section4 />
     </>
   );
 }
+
 function Section1() {
+  const { theme } = useContext(ThemeContext);
+
   return (
-    <div className="custom-container border-bottom border-2 border-primary text-white py-5">
+    <div
+      className={` border-bottom border-2 border-primary py-5 ${
+        theme === "dark" ? "bg-dark text-white" : "bg-light text-dark"
+      }`}
+    >
       <div className="container">
-        <div className="d-flex flex-column flex-lg-row align-items-center bg-light text-dark p-4 rounded shadow-lg">
+        <div
+          className={`d-flex flex-column flex-lg-row align-items-center p-4 rounded shadow-lg ${
+            theme === "dark" ? "bg-secondary text-white" : "bg-light text-dark"
+          }`}
+        >
           <div className="text-center text-lg-start flex-grow-1 p-3">
             <h2 className="fw-bold text-primary">Test Preparation</h2>
             <h4 className="fw-bold">
               Ace Your <span className="text-primary">University</span> Entrance
               Tests with Confidence!
             </h4>
-            <p className="text-muted">
+            <p className={theme === "dark" ? "text-light" : "text-muted"}>
               Access tailored resources, test strategies, and progress tracking
               to achieve your goals.
             </p>
@@ -43,7 +51,11 @@ function Section1() {
         </div>
         <div className="mt-4 text-center">
           <div className="mx-auto" style={{ maxWidth: "400px" }}>
-            <select className="form-select mb-3">
+            <select
+              className={`form-select mb-3 ${
+                theme === "dark" ? "bg-secondary text-white" : ""
+              }`}
+            >
               <option>Choose the Test</option>
               <option>SAT</option>
               <option>NAT</option>
@@ -57,11 +69,13 @@ function Section1() {
     </div>
   );
 }
+
 function Section2() {
   return <SubjectCard />;
 }
 
 function Section3() {
+  const { theme } = useContext(ThemeContext);
   const categories = [
     { title: "Past Papers", icon: "/Brain.svg" },
     { title: "Practice Questions", icon: "/Paper.svg" },
@@ -69,7 +83,11 @@ function Section3() {
   ];
 
   return (
-    <div className="text-center custom-container text-white py-4 border-bottom border-2 border-primary ">
+    <div
+      className={`text-center py-4 border-bottom border-2 border-primary ${
+        theme === "dark" ? "bg-dark text-white" : "bg-light text-dark"
+      }`}
+    >
       <h4 className="fw-bold mb-5">Test Material Categories</h4>
 
       <div className="row g-4 px-3">
@@ -78,7 +96,11 @@ function Section3() {
             key={index}
             className="col-12 col-md-4 col-lg-4 d-flex flex-column align-items-center justify-content-center"
           >
-            <div className="category-card d-flex flex-column align-items-center p-4">
+            <div
+              className={`category-card d-flex flex-column align-items-center p-4 ${
+                theme === "dark" ? "bg-secondary text-white" : "bg-light"
+              }`}
+            >
               <img
                 src={category.icon}
                 alt={category.title}
@@ -92,7 +114,11 @@ function Section3() {
     </div>
   );
 }
+
 function Section4() {
+  const { theme } = useContext(ThemeContext);
+  const [overallProgress] = useState(65); // Now properly imported
+
   const subjects = [
     { name: "Biology", progress: 75 },
     { name: "Computer", progress: 60 },
@@ -100,10 +126,13 @@ function Section4() {
     { name: "Math", progress: 80 },
     { name: "Physics", progress: 40 },
   ];
-  const [overallProgress] = useState(65);
 
   return (
-    <div className="text-center custom-container text-white py-4 border-bottom border-2 border-primary">
+    <div
+      className={`text-center py-4 border-bottom border-2 border-primary ${
+        theme === "dark" ? "bg-dark text-white" : "bg-light text-dark"
+      }`}
+    >
       <h4 className="fw-bold mb-4">Track Your Progress</h4>
       <div className="row g-3 px-3">
         <div className="col-md-6">
@@ -113,7 +142,13 @@ function Section4() {
               key={index}
               className="d-flex align-items-center justify-content-between mb-2"
             >
-              <span className="fw-bold subject-name ms-5">{subject.name}</span>
+              <span
+                className={`fw-bold subject-name ms-5 ${
+                  theme === "dark" ? "text-white" : ""
+                }`}
+              >
+                {subject.name}
+              </span>
               <div className="progress flex-grow-1 mx-2 progress-container me-5">
                 <div
                   className="progress-bar bg-primary"
@@ -129,13 +164,26 @@ function Section4() {
             </div>
           ))}
         </div>
-        <div className="col-md-6 d-flex flex-column align-items-center justify-content-center border-primary border-start overall-progress">
+        <div
+          className={`col-md-6 d-flex flex-column align-items-center justify-content-center border-primary ${
+            theme === "dark" ? "border-secondary" : ""
+          } border-start`}
+        >
           <h6>Overall Progress</h6>
           <div className="progress-circle mt-3">
             <svg viewBox="0 0 100 100">
-              <circle className="progress-bg" cx="50" cy="50" r="45"></circle>
               <circle
-                className="progress-fill"
+                className={
+                  theme === "dark" ? "progress-bg-dark" : "progress-bg"
+                }
+                cx="50"
+                cy="50"
+                r="45"
+              ></circle>
+              <circle
+                className={
+                  theme === "dark" ? "progress-fill-dark" : "progress-fill"
+                }
                 cx="50"
                 cy="50"
                 r="45"
@@ -143,7 +191,14 @@ function Section4() {
                   strokeDashoffset: 283 - (283 * overallProgress) / 100,
                 }}
               ></circle>
-              <text x="50" y="55" textAnchor="middle" className="progress-text">
+              <text
+                x="50"
+                y="55"
+                textAnchor="middle"
+                className={
+                  theme === "dark" ? "progress-text-dark" : "progress-text"
+                }
+              >
                 {overallProgress}%
               </text>
             </svg>

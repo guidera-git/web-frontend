@@ -1,5 +1,4 @@
 .custom-container {
-  background-color: #222222;
   padding: 40px 15px;
   max-width: 1280px;
   margin: 0 auto;
@@ -81,7 +80,7 @@ img:hover {
 
 .category-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 4px 10px rgba(255, 255, 255, 0.2);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
 .icon-img {
@@ -102,39 +101,69 @@ img:hover {
 .progress-container {
   max-width: 250px; /* Manages the progress bar width */
 }
-
 .progress-circle {
-  width: 120px;
-  height: 120px;
-  position: relative;
+  width: 150px;
+  height: 150px;
 }
 
 .progress-circle svg {
-  transform: rotate(0deg);
+  width: 100%;
+  height: 100%;
 }
 
 .progress-bg {
   fill: none;
-  stroke: #ddd;
+  stroke: #e9ecef;
+  stroke-width: 8;
+}
+
+.progress-bg-dark {
+  fill: none;
+  stroke: #495057;
   stroke-width: 8;
 }
 
 .progress-fill {
   fill: none;
-  stroke: #007bff;
+  stroke: #0d6efd; /* Bootstrap primary color */
   stroke-width: 8;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
   stroke-dasharray: 283;
-  stroke-dashoffset: 283;
-  transition: stroke-dashoffset 1s ease-in-out;
+  transition: stroke-dashoffset 0.5s ease;
+}
+
+.progress-fill-dark {
+  fill: none;
+  stroke: #0d6efd; /* Bootstrap primary color */
+  stroke-width: 8;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+  stroke-dasharray: 283;
+  transition: stroke-dashoffset 0.5s ease;
 }
 
 .progress-text {
-  font-size: 18px;
+  font-size: 1.5rem;
   font-weight: bold;
-  fill: white;
+  fill: #212529;
 }
+
+.progress-text-dark {
+  font-size: 1.5rem;
+  font-weight: bold;
+  fill: #ffffff;
+}
+
+
 @media (max-width: 780px) {
   .overall-progress {
     border-left: none !important;
   }
+}
+.icon-img {
+  height: 60px;
+  width: auto;
 }
