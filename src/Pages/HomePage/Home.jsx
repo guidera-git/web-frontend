@@ -42,7 +42,11 @@ function Section1() {
         </div>
         <div className="col-md-6 d-flex justify-content-center align-items-center p-0">
           <img
-            src={theme === "light" ? "/student_laptop.svg" : "/student_laptop_whit.svg"}
+            src={
+              theme === "light"
+                ? "/student_laptop.svg"
+                : "/student_laptop_whit.svg"
+            }
             alt="Home1"
             width={400}
             height={400}
@@ -134,6 +138,8 @@ function Section3() {
 }
 
 function Section4() {
+  const { theme } = useContext(ThemeContext);
+
   const navigate = useNavigate();
   const services = [
     {
@@ -166,33 +172,46 @@ function Section4() {
   ];
 
   return (
-    <div className="custom-container container-fluid border-bottom border-2 border-primary py-1">
-      <div className="container">
+    <div className="custom-container container-fluid border-bottom border-2 py-1">
+      <div className="container mb-4">
         <h2 className="text-center mb-5">Our Services</h2>
-        <div className="row g-4">
+        <div className="row g-0">
           {services.map((service, index) => (
-            <div
-              key={index}
-              className="col-md-6 d-flex flex-column align-items-center text-center p-4"
-            >
-              <img
-                src={service.image}
-                alt={service.title}
-                width={100}
-                height={100}
-                className="mb-3"
-              />
-              <h4>{service.title}</h4>
-              <p>{service.description}</p>
-              <button
-                className="btn btn-transparent text-primary d-flex align-items-center justify-content-center gap-3 border-0 w-100"
-                onClick={() => navigate(service.link)}
+            <div key={index} className="col-md-6 p-0">
+              <div
+                className="h-100 d-flex flex-column align-items-center text-center p-4"
+                style={{
+                  borderRight: index === 0 ? "1px solid" : "none",
+                  borderBottom: index === 1 ? "1px solid" : "none",
+                  borderTop: index === 2 ? "1px solid" : "none",
+                  borderLeft: index === 3 ? "1px solid" : "none",
+                  borderColor: theme === "dark" ? "#ffffff" : "#0d6efd",
+                }}
               >
-                <FaArrowRight
-                  className="text-primary"
-                  style={{ fontSize: "1.5rem" }}
+                <img
+                  src={service.image}
+                  alt={service.title}
+                  width={100}
+                  height={100}
+                  className="mb-3"
                 />
-              </button>
+                <h4>{service.title}</h4>
+                <p>{service.description}</p>
+                <button
+                  className="btn btn-transparent d-flex align-items-center justify-content-center gap-3 border-0 w-100"
+                  style={{
+                    color: theme === "dark" ? "#ffffff" : "#0d6efd",
+                  }}
+                  onClick={() => navigate(service.link)}
+                >
+                  <FaArrowRight
+                    style={{
+                      fontSize: "1.5rem",
+                      color: theme === "dark" ? "#ffffff" : "#0d6efd",
+                    }}
+                  />
+                </button>
+              </div>
             </div>
           ))}
         </div>

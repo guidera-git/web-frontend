@@ -6,9 +6,11 @@ import "./FindUniversity.css";
 import UniversityList from "../../components/UniversityList/UniversityList";
 import ComparisonModal from "../../components/Comparison/ComparisonModal";
 import { useLocation, useNavigate } from "react-router-dom";
+
 function FindUniversity() {
   const [selectedForComparison, setSelectedForComparison] = useState([]);
   const [isComparisonCleared, setIsComparisonCleared] = useState(false);
+  const navigate = useNavigate();
 
   const handleCompare = (uni) => {
     setSelectedForComparison((prev) =>
@@ -43,9 +45,24 @@ function FindUniversity() {
           onClose={resetComparison}
         />
       )}
+      <button
+        className="bt_float btn btn-primary position-fixed rounded-pill d-flex align-items-center"
+        style={{
+          bottom: "20px",
+          right: "20px",
+          padding: "10px 20px",
+          zIndex: 1000,
+          boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
+        }}
+        onClick={() => navigate("/Form")}
+      >
+        <i className="bi bi-stars"></i>
+        Recommend Me
+      </button>
     </div>
   );
 }
+
 function Section1() {
   const navigate = useNavigate();
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -169,9 +186,10 @@ function Section2({ onCompare, isComparisonDisabled, isComparisonCleared }) {
   const [locations, setLocations] = useState([]);
   const [programsOffered, setProgramsOffered] = useState([]);
   const [universityNames, setUniversityNames] = useState([]);
-  const [stats, setStats] = useState(null); // NEW
+  const [stats, setStats] = useState(null);
   const { program } = location.state || {};
 
+  const { theme } = useContext(ThemeContext);
   const [filters, setFilters] = useState({
     location: "all",
     program_title: program || "all",
@@ -189,24 +207,32 @@ function Section2({ onCompare, isComparisonDisabled, isComparisonCleared }) {
   const authHeader = { headers: { Authorization: `Bearer ${token}` } };
 
   useEffect(() => {
-    fetchAllPrograms();
     fetchDropdowns();
     fetchStatistics();
+
+    // If program comes from location, automatically search for it
     if (program) {
       handleProgramSearch(program);
+    } else {
+      fetchAllPrograms();
     }
-  }, []);
+  }, [program]); // Added program as dependency
+
+  // Updated handleProgramSearch to use filter endpoint for complete data
   const handleProgramSearch = async (programName) => {
     setLoading(true);
     setErrorMessage(null);
     setNotFound(false);
     try {
+      // Use the filter endpoint instead of search to get complete program data
+      const params = new URLSearchParams();
+      params.append("program_title", programName);
+
       const res = await axios.get(
-        `http://localhost:3000/api/programs/search/${encodeURIComponent(
-          programName
-        )}`,
+        `http://localhost:3000/api/programs/filter?${params.toString()}`,
         authHeader
       );
+
       setUniversities(res.data);
       setCurrentPage(1);
       setNotFound(res.data.length === 0);
@@ -217,6 +243,7 @@ function Section2({ onCompare, isComparisonDisabled, isComparisonCleared }) {
       setLoading(false);
     }
   };
+
   const fetchAllPrograms = async () => {
     setLoading(true);
     setErrorMessage(null);
@@ -264,11 +291,11 @@ function Section2({ onCompare, isComparisonDisabled, isComparisonCleared }) {
     }
   };
 
+  // Updated handleSearch to use comprehensive search approach
   const handleSearch = async () => {
     const trimmed = searchTerm.trim();
 
     if (trimmed === "") {
-      // 👇 This block replaces the error and shows everything
       fetchAllPrograms();
       setErrorMessage(null);
       setNotFound(false);
@@ -280,46 +307,34 @@ function Section2({ onCompare, isComparisonDisabled, isComparisonCleared }) {
     setNotFound(false);
 
     try {
-      const [uniRes, progRes] = await Promise.all([
+      // Use filter endpoint for program search to get complete data
+      const programParams = new URLSearchParams();
+      programParams.append("program_title", trimmed);
+
+      const universityParams = new URLSearchParams();
+      universityParams.append("university_title", trimmed);
+
+      const [progRes, uniRes] = await Promise.all([
         axios.get(
-          `http://localhost:3000/api/universities/search/${encodeURIComponent(
-            trimmed
-          )}`,
+          `http://localhost:3000/api/programs/filter?${programParams.toString()}`,
           authHeader
         ),
         axios.get(
-          `http://localhost:3000/api/programs/search/${encodeURIComponent(
-            trimmed
-          )}`,
+          `http://localhost:3000/api/programs/filter?${universityParams.toString()}`,
           authHeader
         ),
       ]);
 
-      const programResults = progRes.data;
-      const universityMatches = uniRes.data;
-
-      const uniProgramPromises = (
-        Array.isArray(universityMatches) ? universityMatches : []
-      ).map((u) =>
-        axios
-          .get(
-            `http://localhost:3000/api/programs/byUniversity/${u.id}`,
-            authHeader
-          )
-          .then((r) => r.data)
+      // Combine results and remove duplicates
+      const combined = [...progRes.data, ...uniRes.data];
+      const uniquePrograms = combined.filter(
+        (program, index, self) =>
+          index === self.findIndex((p) => p.program_id === program.program_id)
       );
 
-      const uniProgramsArrays = await Promise.all(uniProgramPromises);
-      const uniPrograms = uniProgramsArrays.flat();
-
-      const combined = [...programResults, ...uniPrograms];
-      const normalized = combined.map((item) => ({
-        ...item,
-        program_id: item.program_id || item.id,
-      }));
-      setUniversities(normalized);
+      setUniversities(uniquePrograms);
       setCurrentPage(1);
-      setNotFound(combined.length === 0);
+      setNotFound(uniquePrograms.length === 0);
     } catch (err) {
       console.error(err);
       setErrorMessage("Search failed. Please try again.");
@@ -355,9 +370,6 @@ function Section2({ onCompare, isComparisonDisabled, isComparisonCleared }) {
       setLoading(false);
       return;
     }
-
-    console.log("Sending query params:", params.toString());
-
     try {
       const res = await axios.get(
         `http://localhost:3000/api/programs/filter?${params.toString()}`,
@@ -382,6 +394,7 @@ function Section2({ onCompare, isComparisonDisabled, isComparisonCleared }) {
       setLoading(false);
     }
   };
+
   const handleResetFilters = async () => {
     setFilters({
       location: "all",
@@ -446,14 +459,30 @@ function Section2({ onCompare, isComparisonDisabled, isComparisonCleared }) {
           Filters
         </button>
       </div>
-      {/* Filter modal */}
+      {/* Filter Modal */}
       {showFilter && (
-        <div className="modal-overlay">
-          <div className="modal-content p-4">
-            <h5>Filters</h5>
+        <div
+          className="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
+          style={{
+            backgroundColor:
+              theme === "dark"
+                ? "rgba(0, 0, 0, 0.5)"
+                : "rgba(255, 255, 255, 0.6)",
+            backdropFilter: "blur(8px)",
+            zIndex: 1055,
+          }}
+        >
+          <div
+            className={`shadow-lg rounded p-4 ${
+              theme === "dark" ? "bg-dark text-light" : "bg-white text-dark"
+            }`}
+            style={{ width: "90%", maxWidth: "800px" }}
+          >
+            <h5 className="mb-3">Filters</h5>
+
             <div className="row mb-3">
               <div className="col">
-                <label>Location</label>
+                <label className="form-label">Location</label>
                 <select
                   className="form-select"
                   value={filters.location}
@@ -469,8 +498,9 @@ function Section2({ onCompare, isComparisonDisabled, isComparisonCleared }) {
                   ))}
                 </select>
               </div>
+
               <div className="col">
-                <label>Program</label>
+                <label className="form-label">Program</label>
                 <select
                   className="form-select"
                   value={filters.program_title}
@@ -486,8 +516,9 @@ function Section2({ onCompare, isComparisonDisabled, isComparisonCleared }) {
                   ))}
                 </select>
               </div>
+
               <div className="col">
-                <label>University</label>
+                <label className="form-label">University</label>
                 <select
                   className="form-select"
                   value={filters.university_title}
@@ -504,8 +535,9 @@ function Section2({ onCompare, isComparisonDisabled, isComparisonCleared }) {
                 </select>
               </div>
             </div>
-            <div className="mb-3 text-start">
-              <label>Total Fee Range (PKR)</label>
+
+            <div className="mb-3">
+              <label className="form-label">Total Fee Range (PKR)</label>
               <div className="d-flex gap-2">
                 <input
                   type="number"
@@ -545,18 +577,23 @@ function Section2({ onCompare, isComparisonDisabled, isComparisonCleared }) {
                   </div>
                 )}
             </div>
-            <div className="text-center">
+
+            <div className="text-center mt-4">
               <button className="btn btn-primary me-2" onClick={handleFilter}>
                 Apply Filters
               </button>
               <button
-                className="btn btn-secondary me-2"
+                className={`btn ${
+                  theme === "dark" ? "btn-light" : "btn-secondary"
+                } me-2`}
                 onClick={handleResetFilters}
               >
                 Reset Filters
               </button>
               <button
-                className="btn btn-danger"
+                className={`btn ${
+                  theme === "dark" ? "btn-outline-light" : "btn-danger"
+                }`}
                 onClick={() => setShowFilter(false)}
               >
                 Cancel
@@ -565,6 +602,7 @@ function Section2({ onCompare, isComparisonDisabled, isComparisonCleared }) {
           </div>
         </div>
       )}
+
       <div className="row">
         {notFound ? (
           <div className="alert alert-info text-center mt-3 w-100">

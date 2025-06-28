@@ -175,7 +175,6 @@ const ProfilePage = () => {
         render: "Profile updated successfully!",
         type: "success",
         isLoading: false,
-        autoClose: 3000,
       });
     } catch (err) {
       console.error("Save error:", err);

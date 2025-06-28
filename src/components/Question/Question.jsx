@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import PropTypes from "prop-types";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { ThemeContext } from "../../ThemeContext"; // Adjust path as needed
 
 function Question({
   question,
@@ -8,6 +9,7 @@ function Question({
   totalQuestions,
   onAnswerChange,
 }) {
+  const { theme } = useContext(ThemeContext);
   const [selectedOption, setSelectedOption] = useState("");
 
   useEffect(() => {
@@ -17,12 +19,20 @@ function Question({
   const handleOptionChange = (event) => {
     const selectedValue = event.target.value;
     setSelectedOption(selectedValue);
-    onAnswerChange(question.id, selectedValue); // Pass exact selected value
+    onAnswerChange(question.id, selectedValue);
   };
 
   return (
-    <div className="card mb-3 shadow-sm">
-      <div className="card-header bg-primary text-white">
+    <div
+      className={`card mb-3 shadow-sm ${
+        theme === "dark" ? "bg-dark text-white" : ""
+      }`}
+    >
+      <div
+        className={`card-header ${
+          theme === "dark" ? "bg-secondary" : "bg-primary"
+        } text-white`}
+      >
         Question {questionNumber}
       </div>
       <div className="card-body">
@@ -31,16 +41,20 @@ function Question({
           {question.options.map((option, index) => (
             <div key={index} className="form-check">
               <input
-                className="form-check-input border-2"
+                className={`form-check-input border-2 ${
+                  theme === "dark" ? "border-light" : "border-dark"
+                }`}
                 type="radio"
                 name={`question-${question.id}`}
-                value={option} // Use full string value
+                value={option}
                 checked={selectedOption === option}
                 onChange={handleOptionChange}
                 id={`q${question.id}-option-${index}`}
               />
               <label
-                className="form-check-label"
+                className={`form-check-label ${
+                  theme === "dark" ? "text-light" : ""
+                }`}
                 htmlFor={`q${question.id}-option-${index}`}
               >
                 {option}

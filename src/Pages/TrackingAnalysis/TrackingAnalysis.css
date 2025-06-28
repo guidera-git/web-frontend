@@ -116,4 +116,6 @@
   .progress-card {
     border-width: 3px;
   }
+}.analytics-card:hover {
+  transform: scale(1.02);
 }

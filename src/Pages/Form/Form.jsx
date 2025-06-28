@@ -1,27 +1,28 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { ThemeContext } from "../../ThemeContext";
 
 const Form = () => {
+  const { theme } = useContext(ThemeContext);
   const navigate = useNavigate();
+
   const [activeSection, setActiveSection] = useState("academic");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [predictionResult, setPredictionResult] = useState(null);
   const [isFormValid, setIsFormValid] = useState(false);
+  const [gender, setGender] = useState("");
 
-  // Grade mapping for O/A-Level
   const grade_mapping = { "A*": 95, A: 85, B: 75, C: 65, D: 55, E: 45 };
 
-  // Form state
   const [formData, setFormData] = useState({
     studentType: "Board",
     matriculationMarks: "",
     intermediateMarks: "",
     oLevelGrade: "",
     aLevelGrade: "",
-    gender: "",
     studyStream: "",
     analysisEnjoyment: "",
     logicalTasks: "",
@@ -33,20 +34,37 @@ const Form = () => {
     projectPreference: "",
   });
 
-  // Check form validity whenever formData changes
+  useEffect(() => {
+    const fetchGender = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      try {
+        const res = await axios.get("http://localhost:3000/api/user/profile", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setGender(res.data.gender || "");
+      } catch (err) {
+        console.error("Failed to fetch gender from profile:", err);
+      }
+    };
+
+    fetchGender();
+  }, []);
+
   useEffect(() => {
     const checkValidity = () => {
       if (activeSection === "academic") {
         if (formData.studentType === "Board") {
           return (
-            formData.gender &&
+            gender &&
             formData.matriculationMarks &&
             formData.intermediateMarks &&
             formData.studyStream
           );
         } else {
           return (
-            formData.gender &&
+            gender &&
             formData.oLevelGrade &&
             formData.aLevelGrade &&
             formData.studyStream
@@ -66,7 +84,7 @@ const Form = () => {
       }
     };
     setIsFormValid(checkValidity());
-  }, [formData, activeSection]);
+  }, [formData, gender, activeSection]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -112,7 +130,7 @@ const Form = () => {
       if (!token) throw new Error("Authentication required");
 
       const requestData = {
-        Gender: formData.gender === "Male" ? 1 : 0,
+        Gender: gender === "Male" ? 1 : 0,
         "Academic Percentage": calculatePercentage(),
         "Study Stream": formData.studyStream,
         Analytical: mapResponseToNumber(formData.analysisEnjoyment),
@@ -170,7 +188,12 @@ const Form = () => {
 
   const renderRadioGroup = (name, question) => (
     <div className="mb-4">
-      <p className="fw-bold">{question}</p>
+      <p
+        className="fw-bold"
+        style={{ color: theme === "dark" ? "white" : "inherit" }}
+      >
+        {question}
+      </p>
       <div className="btn-group d-flex flex-wrap" role="group">
         {radioOptions.map((option) => (
           <React.Fragment key={option}>
@@ -185,8 +208,20 @@ const Form = () => {
               required
             />
             <label
-              className="btn btn-outline-primary flex-grow-1"
+              className={`btn btn-outline-primary flex-grow-1 ${
+                theme === "dark" ? "text-white" : ""
+              }`}
               htmlFor={`${name}-${option}`}
+              style={{
+                backgroundColor:
+                  formData[name] === option ? "#0d6efd" : "transparent",
+                color:
+                  formData[name] === option
+                    ? "white"
+                    : theme === "dark"
+                    ? "white"
+                    : "inherit",
+              }}
             >
               {option}
             </label>
@@ -195,13 +230,21 @@ const Form = () => {
       </div>
     </div>
   );
+
   if (predictionResult) {
     navigate("/degree-recommendation", { state: { predictionResult } });
     return null;
   }
 
   return (
-    <div className="container py-4">
+    <div
+      className="container py-4"
+      style={{
+        backgroundColor: theme === "dark" ? "#212529" : "white",
+        color: theme === "dark" ? "white" : "inherit",
+        minHeight: "100vh",
+      }}
+    >
       <h1 className="text-center mb-4 text-primary">Guidera</h1>
 
       {error && <div className="alert alert-danger">{error}</div>}
@@ -222,67 +265,35 @@ const Form = () => {
 
       <form onSubmit={handleSubmit}>
         {activeSection === "academic" && (
-          <div className="">
-            <div className="rounded center text-primary text-center">
-              <h3>Academic Information</h3>
-            </div>
+          <>
+            <h3 className="text-primary text-center">Academic Information</h3>
             <div
-              className="form-control p-2 custom-input mb-2"
-              style={{ background: "", color: "white" }}
+              className="form-control p-4 mb-3"
+              style={{
+                backgroundColor: theme === "dark" ? "#343a40" : "white",
+                borderColor: theme === "dark" ? "#495057" : "#dee2e6",
+                color: theme === "dark" ? "white" : "inherit",
+              }}
             >
-              {/* Gender Field */}
-              <div className="mb-3">
-                <label className="form-label">Gender*</label>
-                <div>
-                  <div className="form-check form-check-inline">
-                    <input
-                      className="form-check-input"
-                      type="radio"
-                      name="gender"
-                      id="gender-male"
-                      value="Male"
-                      checked={formData.gender === "Male"}
-                      onChange={handleChange}
-                      required
-                    />
-                    <label className="form-check-label" htmlFor="gender-male">
-                      Male
-                    </label>
-                  </div>
-                  <div className="form-check form-check-inline">
-                    <input
-                      className="form-check-input"
-                      type="radio"
-                      name="gender"
-                      id="gender-female"
-                      value="Female"
-                      checked={formData.gender === "Female"}
-                      onChange={handleChange}
-                      required
-                    />
-                    <label className="form-check-label" htmlFor="gender-female">
-                      Female
-                    </label>
-                  </div>
-                </div>
-              </div>
-
               {/* Student Type */}
               <div className="mb-3">
                 <label className="form-label">Student Type*</label>
                 <select
-                  className="form-control p-2 custom-input mb-2"
+                  className="form-select"
                   name="studentType"
                   value={formData.studentType}
                   onChange={handleChange}
                   required
+                  style={{
+                    backgroundColor: theme === "dark" ? "#495057" : "white",
+                    color: theme === "dark" ? "white" : "inherit",
+                  }}
                 >
                   <option value="Board">Matric/FSc (Board)</option>
                   <option value="O/A Level">O/A Level</option>
                 </select>
               </div>
 
-              {/* Conditional Fields */}
               {formData.studentType === "Board" ? (
                 <>
                   <div className="mb-3">
@@ -291,13 +302,18 @@ const Form = () => {
                     </label>
                     <input
                       type="number"
-                      className="form-control p-2 custom-input mb-2l"
+                      className="form-control"
                       name="matriculationMarks"
                       value={formData.matriculationMarks}
                       onChange={handleChange}
                       min="0"
                       max="1100"
                       required
+                      style={{
+                        backgroundColor: theme === "dark" ? "#495057" : "white",
+                        color: theme === "dark" ? "white" : "inherit",
+                        borderColor: theme === "dark" ? "#6c757d" : "#ced4da",
+                      }}
                     />
                   </div>
                   <div className="mb-3">
@@ -306,13 +322,18 @@ const Form = () => {
                     </label>
                     <input
                       type="number"
-                      className="form-control p-2 custom-input mb-2"
+                      className="form-control"
                       name="intermediateMarks"
                       value={formData.intermediateMarks}
                       onChange={handleChange}
                       min="0"
                       max="1100"
                       required
+                      style={{
+                        backgroundColor: theme === "dark" ? "#495057" : "white",
+                        color: theme === "dark" ? "white" : "inherit",
+                        borderColor: theme === "dark" ? "#6c757d" : "#ced4da",
+                      }}
                     />
                   </div>
                 </>
@@ -326,6 +347,10 @@ const Form = () => {
                       value={formData.oLevelGrade}
                       onChange={handleChange}
                       required
+                      style={{
+                        backgroundColor: theme === "dark" ? "#495057" : "white",
+                        color: theme === "dark" ? "white" : "inherit",
+                      }}
                     >
                       <option value="">Select grade</option>
                       {Object.keys(grade_mapping).map((grade) => (
@@ -343,6 +368,10 @@ const Form = () => {
                       value={formData.aLevelGrade}
                       onChange={handleChange}
                       required
+                      style={{
+                        backgroundColor: theme === "dark" ? "#495057" : "white",
+                        color: theme === "dark" ? "white" : "inherit",
+                      }}
                     >
                       <option value="">Select grade</option>
                       {Object.keys(grade_mapping).map((grade) => (
@@ -359,11 +388,15 @@ const Form = () => {
               <div className="mb-3">
                 <label className="form-label">Study Stream*</label>
                 <select
-                  className="form-control p-2 custom-input mb-2"
+                  className="form-select"
                   name="studyStream"
                   value={formData.studyStream}
                   onChange={handleChange}
                   required
+                  style={{
+                    backgroundColor: theme === "dark" ? "#495057" : "white",
+                    color: theme === "dark" ? "white" : "inherit",
+                  }}
                 >
                   <option value="">Select your stream</option>
                   <option value="Pre-Medical">Pre-Medical</option>
@@ -372,17 +405,19 @@ const Form = () => {
                 </select>
               </div>
             </div>
-          </div>
+          </>
         )}
 
         {activeSection === "personality" && (
-          <div className="">
-            <div className="rounded center text-primary text-center">
-              <h3>Personality Assessment</h3>
-            </div>
+          <>
+            <h3 className="text-primary text-center">Personality Assessment</h3>
             <div
-              className="form-control p-2 custom-input mb-2"
-              style={{ background: "#222222", color: "white" }}
+              className="form-control p-4 mb-3"
+              style={{
+                backgroundColor: theme === "dark" ? "#343a40" : "white",
+                borderColor: theme === "dark" ? "#495057" : "#dee2e6",
+                color: theme === "dark" ? "white" : "inherit",
+              }}
             >
               {renderRadioGroup(
                 "analysisEnjoyment",
@@ -410,7 +445,12 @@ const Form = () => {
               )}
 
               <div className="mb-4">
-                <p className="fw-bold">Which activity excites you the most?*</p>
+                <p
+                  className="fw-bold"
+                  style={{ color: theme === "dark" ? "white" : "inherit" }}
+                >
+                  Which activity excites you the most?*
+                </p>
                 {[
                   "Analyzing data to make predictions",
                   "Designing and building systems",
@@ -430,6 +470,7 @@ const Form = () => {
                     <label
                       className="form-check-label"
                       htmlFor={`excitingActivity-${option}`}
+                      style={{ color: theme === "dark" ? "white" : "inherit" }}
                     >
                       {option}
                     </label>
@@ -438,7 +479,10 @@ const Form = () => {
               </div>
 
               <div className="mb-4">
-                <p className="fw-bold">
+                <p
+                  className="fw-bold"
+                  style={{ color: theme === "dark" ? "white" : "inherit" }}
+                >
                   Which type of project would you prefer?*
                 </p>
                 {[
@@ -460,6 +504,7 @@ const Form = () => {
                     <label
                       className="form-check-label"
                       htmlFor={`projectPreference-${option}`}
+                      style={{ color: theme === "dark" ? "white" : "inherit" }}
                     >
                       {option}
                     </label>
@@ -467,7 +512,7 @@ const Form = () => {
                 ))}
               </div>
             </div>
-          </div>
+          </>
         )}
 
         <div className="d-flex justify-content-between">

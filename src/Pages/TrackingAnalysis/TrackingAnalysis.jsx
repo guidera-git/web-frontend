@@ -54,7 +54,6 @@ function Section1() {
         setLoading(false);
       }
     };
-
     fetchApplications();
   }, []);
 
@@ -66,7 +65,6 @@ function Section1() {
     const inProgress = applications.filter(
       (app) => app.status === "in_progress"
     ).length;
-
     const avgProgress =
       total > 0
         ? applications.reduce(
@@ -96,39 +94,78 @@ function Section1() {
     );
   }
 
+  const cardStyle = {
+    borderRadius: "1rem",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+    transition: "transform 0.2s ease-in-out",
+  };
+
+  const getColorClass = (type) => {
+    const base = theme === "dark" ? "text-white" : "text-dark";
+    const bgMap = {
+      total: theme === "dark" ? "bg-primary" : "bg-info",
+      inProgress: theme === "dark" ? "bg-warning" : "bg-warning",
+      completed: theme === "dark" ? "bg-success" : "bg-success",
+      avg: theme === "dark" ? "bg-danger" : "bg-danger",
+    };
+    return `${bgMap[type]} ${base}`;
+  };
+
   return (
     <div
-      className={`card mb-4 shadow-sm ${
-        theme === "dark" ? "bg-dark text-white" : ""
+      className={`card mb-4 border-0 shadow-sm ${
+        theme === "dark" ? "bg-dark text-white" : "bg-white"
       }`}
     >
       <div className="card-body">
-        <h2 className="card-title mb-4">My Application Analytics</h2>
+        <h2 className="card-title mb-4"> My Application Analytics</h2>
+        <div className="row g-4">
+          <div className="col-md-6 col-lg-3">
+            <div
+              className={`p-4 text-center rounded ${getColorClass("total")}`}
+              style={cardStyle}
+            >
+              <i className="bi bi-folder2-open display-5 mb-2"></i>
+              <h3>{stats.total}</h3>
+              <p className="mb-0">Total Applications</p>
+            </div>
+          </div>
 
-        <div className="row text-center">
-          <div className="col-md-3">
-            <div className="display-4">{stats.total}</div>
-            <p className={theme === "dark" ? "text-light" : "text-muted"}>
-              Total Applications
-            </p>
+          <div className="col-md-6 col-lg-3">
+            <div
+              className={`p-4 text-center rounded ${getColorClass(
+                "inProgress"
+              )}`}
+              style={cardStyle}
+            >
+              <i className="bi bi-hourglass-split display-5 mb-2"></i>
+              <h3>{stats.inProgress}</h3>
+              <p className="mb-0">In Progress</p>
+            </div>
           </div>
-          <div className="col-md-3">
-            <div className="display-4">{stats.inProgress}</div>
-            <p className={theme === "dark" ? "text-light" : "text-muted"}>
-              In Progress
-            </p>
+
+          <div className="col-md-6 col-lg-3">
+            <div
+              className={`p-4 text-center rounded ${getColorClass(
+                "completed"
+              )}`}
+              style={cardStyle}
+            >
+              <i className="bi bi-check2-circle display-5 mb-2"></i>
+              <h3>{stats.completed}</h3>
+              <p className="mb-0">Completed</p>
+            </div>
           </div>
-          <div className="col-md-3">
-            <div className="display-4">{stats.completed}</div>
-            <p className={theme === "dark" ? "text-light" : "text-muted"}>
-              Completed
-            </p>
-          </div>
-          <div className="col-md-3">
-            <div className="display-4">{stats.avgProgress}%</div>
-            <p className={theme === "dark" ? "text-light" : "text-muted"}>
-              Avg Progress
-            </p>
+
+          <div className="col-md-6 col-lg-3">
+            <div
+              className={`p-4 text-center rounded ${getColorClass("avg")}`}
+              style={cardStyle}
+            >
+              <i className="bi bi-bar-chart-line-fill display-5 mb-2"></i>
+              <h3>{stats.avgProgress}%</h3>
+              <p className="mb-0">Avg Progress</p>
+            </div>
           </div>
         </div>
       </div>
@@ -438,6 +475,7 @@ function Section3() {
   const handlePhaseUpdate = async (appId, phase, completed, note) => {
     try {
       const token = localStorage.getItem("token");
+
       await axios.patch(
         `http://localhost:3000/api/applications/${appId}/phase`,
         {
@@ -454,8 +492,15 @@ function Section3() {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+
+      // Update all applications
       setApplications(response.data);
 
+      // 🔁 Update selected application with the new one
+      const updatedApp = response.data.find((app) => app.id === appId);
+      setSelectedApp(updatedApp);
+
+      // Update notes
       setPhaseNotes((prev) => ({
         ...prev,
         [`${appId}-${phase.phase}`]: note,
@@ -483,7 +528,7 @@ function Section3() {
 
   return (
     <div
-      className={`card shadow-sm ${
+      className={`card mb-3 shadow-sm ${
         theme === "dark" ? "bg-dark text-white" : ""
       }`}
     >
@@ -491,55 +536,67 @@ function Section3() {
         <h2 className="card-title mb-4">My Active Applications</h2>
 
         <div className="applications-list">
-          {currentItems.map((app) => (
+          {currentItems.length === 0 ? (
             <div
-              key={app.id}
-              className={`mb-3 p-3 border rounded ${
+              className={`p-3 text-center rounded ${
                 theme === "dark"
                   ? "bg-secondary text-white border-dark"
-                  : "bg-light"
+                  : "bg-light text-muted"
               }`}
             >
-              <div className="d-flex justify-content-between align-items-center">
-                <div>
-                  <h4>{app.university_title}</h4>
-                  <h5>{app.program_title}</h5>
-                </div>
-                <div className="text-end">
-                  <div className="progress mb-2" style={{ height: "8px" }}>
-                    <div
-                      className="progress-bar bg-success"
-                      style={{ width: `${app.progress_percentage}%` }}
-                    ></div>
-                  </div>
-                  <small>{app.progress_percentage}%</small>
-                </div>
-              </div>
-
-              <div className="d-flex justify-content-end mt-2">
-                <button
-                  className={`btn btn-sm me-2 ${
-                    theme === "dark"
-                      ? "btn-outline-light" // Light outline for dark mode
-                      : "btn-outline-primary" // Default for light mode
-                  }`}
-                  onClick={() => handleEditApplication(app)}
-                >
-                  <i className="bi bi-pencil"></i> Edit
-                </button>
-                <button
-                  className={`btn btn-sm ${
-                    theme === "dark"
-                      ? "btn-outline-warning" // More visible in dark mode
-                      : "btn-outline-danger" // Default for light mode
-                  }`}
-                  onClick={() => handleDeleteApplication(app.id)}
-                >
-                  <i className="bi bi-trash"></i> Delete
-                </button>
-              </div>
+              No applications found.
             </div>
-          ))}
+          ) : (
+            currentItems.map((app) => (
+              <div
+                key={app.id}
+                className={`mb-3 p-3 border rounded ${
+                  theme === "dark"
+                    ? "bg-secondary text-white border-dark"
+                    : "bg-light"
+                }`}
+              >
+                <div className="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h4>{app.university_title}</h4>
+                    <h5>{app.program_title}</h5>
+                  </div>
+                  <div className="text-end">
+                    <div className="progress mb-2" style={{ height: "8px" }}>
+                      <div
+                        className="progress-bar bg-success"
+                        style={{ width: `${app.progress_percentage}%` }}
+                      ></div>
+                    </div>
+                    <small>{app.progress_percentage}%</small>
+                  </div>
+                </div>
+
+                <div className="d-flex justify-content-end mt-2">
+                  <button
+                    className={`btn btn-sm me-2 ${
+                      theme === "dark"
+                        ? "btn-outline-light"
+                        : "btn-outline-primary"
+                    }`}
+                    onClick={() => handleEditApplication(app)}
+                  >
+                    <i className="bi bi-pencil"></i> Edit
+                  </button>
+                  <button
+                    className={`btn btn-sm ${
+                      theme === "dark"
+                        ? "btn-outline-warning"
+                        : "btn-outline-danger"
+                    }`}
+                    onClick={() => handleDeleteApplication(app.id)}
+                  >
+                    <i className="bi bi-trash"></i> Delete
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
         </div>
 
         {applications.length > itemsPerPage && (

@@ -1,8 +1,8 @@
-import { ThemeContext } from "../../ThemeContext";
 import React, { useContext, useState, useEffect, useRef } from "react";
+import { ThemeContext } from "../../ThemeContext";
 import "bootstrap/dist/css/bootstrap.min.css";
-import NavigationBar from "../../components/NavigationBar/NavigationBar";
 import "./Chatbot.css";
+import NavigationBar from "../../components/NavigationBar/NavigationBar";
 import axios from "axios";
 
 function Chatbot() {
@@ -22,7 +22,6 @@ function Section1() {
   const [showSuggestions, setShowSuggestions] = useState(true);
   const messagesEndRef = useRef(null);
 
-  // Suggestions data
   const suggestions = [
     { title: "Guidera", prompt: "What is Guidera?" },
     { title: "Business suggestion", prompt: "Suggest some business ideas" },
@@ -30,15 +29,11 @@ function Section1() {
     { title: "Photosynthesis", prompt: "what is Photosynthesis" },
   ];
 
-  // Check localStorage on component mount
   useEffect(() => {
     const hasInteracted = localStorage.getItem("chatbotHasInteracted");
-    if (hasInteracted === "true") {
-      setShowSuggestions(true);
-    }
+    if (hasInteracted === "true") setShowSuggestions(true);
 
-    // Optional: Hide suggestions after some time (e.g., 24 hours)
-    const lastInteraction = localStorage.getItem("chatbotLastInteractio");
+    const lastInteraction = localStorage.getItem("chatbotLastInteraction");
     if (lastInteraction) {
       const oneDay = 24 * 60 * 60 * 1000;
       if (Date.now() - parseInt(lastInteraction) > oneDay) {
@@ -48,7 +43,6 @@ function Section1() {
     }
   }, []);
 
-  // Auto-scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -60,12 +54,10 @@ function Section1() {
   const sendMessage = async () => {
     if (input.trim() === "") return;
 
-    // Hide suggestions and mark as interacted
     setShowSuggestions(false);
     localStorage.setItem("chatbotHasInteracted", "true");
     localStorage.setItem("chatbotLastInteraction", Date.now().toString());
 
-    // Add user message to chat
     const userMessage = { text: input, type: "outgoing" };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
@@ -74,11 +66,8 @@ function Section1() {
 
     try {
       const token = localStorage.getItem("token");
-      if (!token) {
-        throw new Error("Authentication required. Please login.");
-      }
+      if (!token) throw new Error("Authentication required. Please login.");
 
-      // Call chatbot API
       const response = await axios.post(
         "http://localhost:3000/api/chatbot",
         { message: input },
@@ -90,13 +79,9 @@ function Section1() {
         }
       );
 
-      // Add bot response to chat
       setMessages((prev) => [
         ...prev,
-        {
-          text: response.data.reply,
-          type: "incoming",
-        },
+        { text: response.data.reply, type: "incoming" },
       ]);
     } catch (err) {
       console.error("Chatbot error:", err);
@@ -106,7 +91,6 @@ function Section1() {
         "Failed to get response from chatbot";
       setError(errorMessage);
 
-      // Add error message to chat
       setMessages((prev) => [
         ...prev,
         {
@@ -120,44 +104,43 @@ function Section1() {
   };
 
   return (
-    <div className="d-flex custom-container vh-100">
+    <div className="d-flex custom-container vh-100 bg-white">
       <div
-        className="flex-grow-1 overflow-auto d-flex flex-column align-items-center p-3"
-        style={{ maxHeight: "calc(100vh - 70px)", paddingBottom: "80px" }}
+        className="flex-grow-1 overflow-auto d-flex flex-column align-items-center p-4"
+        style={{ maxHeight: "calc(100vh - 70px)", paddingBottom: "100px" }}
       >
         {showSuggestions && messages.length === 0 && (
-          <div className="w-100 text-center p-4">
-            <h3 className="mb-3">How can I assist you today?</h3>
-            <p className="mb-4">
-              Tap below suggestions or write your own query.
+          <div className="w-100 text-center p-4 animate__animated animate__fadeIn">
+            <span className="typing-text mb-3">
+              How can I assist you today?
+            </span>
+            <p className="mb-4 text-muted">
+              Tap a suggestion or type your own query.
             </p>
-
-            <div className="row g-1 mb-4">
-              {suggestions.map((suggestion, index) => (
-                <div key={index} className="col-6">
+            <div className="row g-2 mb-4 justify-content-center">
+              {suggestions.map((s, i) => (
+                <div key={i} className="col-md-5 col-6">
                   <div
-                    className="p-3 bg-light rounded shadow-sm text-center cursor-pointer hover-effect mx-auto mb-3"
-                    style={{ maxWidth: "500px" }}
-                    onClick={() => handleSuggestionClick(suggestion.prompt)}
+                    className="p-3 bg-light rounded hover-effect shadow-sm text-center"
+                    onClick={() => handleSuggestionClick(s.prompt)}
                   >
-                    {suggestion.title}
+                    {s.title}
                   </div>
                 </div>
               ))}
             </div>
-
-            <div className="fst-italic mt-5">Ask anything....</div>
+            <div className="fst-italic text-muted mt-4">Ask anything…</div>
           </div>
         )}
 
-        {messages.map((msg, index) => (
+        {messages.map((msg, i) => (
           <div
-            key={index}
+            key={i}
             className={`d-flex ${
               msg.type === "outgoing"
                 ? "justify-content-end"
                 : "justify-content-start"
-            } w-100 mb-2`}
+            } w-100 mb-2 chat-bubble`}
           >
             <div
               className={`p-3 shadow-sm ${
@@ -166,11 +149,11 @@ function Section1() {
                   : "bg-light text-dark"
               }`}
               style={{
-                maxWidth: "50%",
+                maxWidth: "60%",
                 borderRadius: "25px",
                 padding: "12px 18px",
-                marginLeft: msg.type === "incoming" ? "20%" : "auto",
-                marginRight: msg.type === "outgoing" ? "20%" : "auto",
+                marginLeft: msg.type === "incoming" ? "15%" : "auto",
+                marginRight: msg.type === "outgoing" ? "15%" : "auto",
               }}
             >
               {msg.text}
@@ -202,44 +185,37 @@ function Section1() {
           </div>
         )}
 
-        {error && (
-          <div className="alert alert-danger mt-2" style={{ width: "80%" }}>
-            {error}
-          </div>
-        )}
+        {error && <div className="alert alert-danger mt-2 w-75">{error}</div>}
 
         <div ref={messagesEndRef} />
       </div>
-
-      {/* Fixed Input Field at Bottom */}
       <div
-        className="position-fixed bottom-0 p-3 shadow start-50 translate-middle-x"
-        style={{ width: "60%" }}
+        className="position-fixed bottom-0 start-50 translate-middle-x w-100"
+        style={{ maxWidth: "800px", padding: "1rem" }}
       >
-        <div className="input-group">
+        <div className="d-flex align-items-center bg-white shadow rounded-pill px-4 py-2 border border-light">
           <input
             type="text"
-            className="form-control bg-light rounded-pill px-3"
-            placeholder="Type a message..."
+            className="form-control border-0 bg-transparent"
+            placeholder="Type your message..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-            style={{ borderRadius: "30px" }}
             disabled={isLoading}
           />
           <button
-            className="btn btn-light rounded-pill border ms-2"
+            className="btn btn-primary rounded-circle ms-2 d-flex justify-content-center align-items-center"
+            style={{ width: "42px", height: "42px" }}
             onClick={sendMessage}
             disabled={isLoading || input.trim() === ""}
           >
             {isLoading ? (
-              <span
-                className="spinner-border spinner-border-sm"
+              <div
+                className="spinner-border spinner-border-sm text-white"
                 role="status"
-                aria-hidden="true"
-              ></span>
+              ></div>
             ) : (
-              <i className="bi bi-send text-primary"></i>
+              <i className="bi bi-send text-white fs-5"></i>
             )}
           </button>
         </div>

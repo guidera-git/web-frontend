@@ -144,7 +144,7 @@ function Footer() {
 
         <div className="footer-bottom d-flex justify-content-center py-3 border-top mt-auto">
           <p className="mb-0 text-center">
-            © 2024 Guidera, Inc. All rights reserved.
+            © 2025 Guidera, Inc. All rights reserved.
           </p>
         </div>
       </footer>

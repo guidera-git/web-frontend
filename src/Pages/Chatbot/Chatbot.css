@@ -21,4 +21,54 @@
 /* Dark mode support */
 .dark .hover-effect{
   background-color: #4a5568 !important;
+}.typing-text {
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  border-right: 2px solid #000;
+  animation: typing 3s steps(30, end), blink 0.75s step-end infinite;
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+@keyframes typing {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes blink {
+  from, to {
+    border-color: transparent;
+  }
+  50% {
+    border-color: black;
+  }
+}
+
+.hover-effect {
+  transition: all 0.3s ease;
+}
+.hover-effect:hover {
+  background-color: #dfefff !important;
+  transform: scale(1.05);
+  cursor: pointer;
+}
+
+.chat-bubble {
+  animation: popIn 0.3s ease-in-out;
+}
+
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }

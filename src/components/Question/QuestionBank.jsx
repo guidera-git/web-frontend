@@ -235,7 +235,7 @@ function QuestionBank() {
             ))}
           </div>
 
-          <div className="text-center mt-3">
+          <div className="text-center mt-3 mb-3">
             <button
               className="btn btn-primary px-4"
               onClick={handleSubmit}

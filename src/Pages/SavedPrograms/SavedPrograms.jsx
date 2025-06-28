@@ -8,35 +8,11 @@ function SavedPrograms() {
   const { theme } = useContext(ThemeContext);
   const [savedPrograms, setSavedPrograms] = useState([]);
   const [selectedApp, setSelectedApp] = useState(null);
-  const [currentStep, setCurrentStep] = useState(1);
-  const [completedSteps, setCompletedSteps] = useState({});
+  const [application, setApplication] = useState(null);
   const [notes, setNotes] = useState({});
   const [applicationStatus, setApplicationStatus] = useState({});
-
-  const steps = [
-    {
-      id: 1,
-      title: "Document Gathering",
-      description:
-        "Start gathering all required documents for your application. Get your transcripts, certificates, and other necessary paperwork ready.",
-    },
-    {
-      id: 2,
-      title: "Application Submission",
-      description:
-        "Submit your completed application form with all required documents to the university.",
-    },
-    {
-      id: 3,
-      title: "Test Preparation",
-      description: "Prepare for and take any required admission tests.",
-    },
-    {
-      id: 4,
-      title: "Admission Decision",
-      description: "Wait for and review the university's admission decision.",
-    },
-  ];
+  const [currentPage, setCurrentPage] = useState(1);
+  const programsPerPage = 8;
 
   const token = localStorage.getItem("token");
   const authHeader = { headers: { Authorization: `Bearer ${token}` } };
@@ -51,32 +27,29 @@ function SavedPrograms() {
         "http://localhost:3000/api/saved-programs",
         authHeader
       );
-      const mapped = data.map((program) => ({
-        id: program.saved_id,
-        university: program.university_title,
-        university_id: program.university_id,
-        program_id: program.program_id,
-        degree: program.program_title,
-        fee: program.calculated_total_fee,
-        duration: program.program_duration,
-        location: program.location,
-        qsRanking: program.qs_ranking,
+      const mapped = data.map((p) => ({
+        id: p.saved_id,
+        university: p.university_title,
+        university_id: p.university_id,
+        program_id: p.program_id,
+        degree: p.program_title,
+        fee: p.calculated_total_fee,
+        duration: p.program_duration,
+        location: p.location,
+        qsRanking: p.qs_ranking,
         deadline:
-          program.important_dates?.[0]?.deadline_application_submission ??
-          "Check university website",
+          p.important_dates?.[0]?.deadline_application_submission ?? null,
       }));
 
+      const statusObj = {};
       for (const prog of mapped) {
         const res = await axios.get(
           `http://localhost:3000/api/applications/check/${prog.program_id}/${prog.university_id}`,
           authHeader
         );
-        setApplicationStatus((prev) => ({
-          ...prev,
-          [prog.id]: res.data.exists,
-        }));
+        statusObj[prog.id] = res.data.exists;
       }
-
+      setApplicationStatus(statusObj);
       setSavedPrograms(mapped);
     } catch (err) {
       console.error("Error fetching saved programs:", err);
@@ -98,80 +71,107 @@ function SavedPrograms() {
     }
   };
 
-  const handleNoteChange = (stepId, note) => {
-    setNotes((prev) => ({ ...prev, [stepId]: note }));
+  const handleNoteChange = (phaseId, note) => {
+    setNotes((prev) => ({ ...prev, [phaseId]: note }));
   };
 
-  const toggleStepCompletion = (stepId) => {
-    setCompletedSteps((prev) => ({
-      ...prev,
-      [stepId]: !prev[stepId],
-    }));
-  };
-
-  const handleModalClose = () => {
-    setSelectedApp(null);
-    setCurrentStep(1);
-    setCompletedSteps({});
-    setNotes({});
-  };
-
-  const calculateProgress = () => {
-    const total = steps.length;
-    const completed = Object.values(completedSteps).filter(Boolean).length;
-    return Math.round((completed / total) * 100);
-  };
-
-  const handleStartOrContinue = async (app) => {
-    const exists = applicationStatus[app.id];
-
-    if (exists) {
-      setSelectedApp(app);
-      return;
+  const handleStartOrContinue = async (prog) => {
+    if (applicationStatus[prog.id]) {
+      return loadApplication(prog);
     }
 
-    const deadline = app.important_dates?.[0]?.deadline_application_submission;
-
-    if (deadline) {
-      const deadlineDate = new Date(deadline);
-      const today = new Date();
-
-      if (today > deadlineDate) {
-        toast.warning(`🚫 Deadline has passed. Last date was: ${deadline}`, {
-          position: "top-center",
-          autoClose: 5000,
-        });
+    if (prog.deadline) {
+      const dl = new Date(prog.deadline);
+      if (new Date() > dl) {
+        toast.warning(
+          `🚫 Deadline has passed. Last date was: ${prog.deadline}`,
+          { position: "top-center", autoClose: 5000 }
+        );
         return;
       }
     }
 
     try {
-      await axios.post(
+      const { data } = await axios.post(
         "http://localhost:3000/api/applications",
-        {
-          program_id: app.program_id,
-          university_id: app.university_id,
-        },
+        { program_id: prog.program_id, university_id: prog.university_id },
         authHeader
       );
-
-      setApplicationStatus((prev) => ({ ...prev, [app.id]: true }));
-      setSelectedApp(app);
-      toast.success("✅ Application started successfully!", {
+      toast.success("✅ Application started!", {
         position: "top-center",
         autoClose: 4000,
       });
+      setApplicationStatus((prev) => ({ ...prev, [prog.id]: true }));
+      setApplication(data.application);
+      setSelectedApp(prog);
+      setNotes(
+        (data.application.phases || []).reduce((acc, ph) => {
+          if (ph.note) acc[ph.phase] = ph.note;
+          return acc;
+        }, {})
+      );
     } catch (err) {
-      const message =
-        err.response?.data?.error || "⚠️ Application creation failed.";
-      toast.error(message, {
-        position: "top-center",
-        autoClose: 5000,
-      });
-      console.error("Error starting application:", err);
+      const msg = err.response?.data?.error || "⚠️ Starting failed.";
+      toast.error(msg, { position: "top-center", autoClose: 5000 });
+      console.error(err);
     }
   };
 
+  const loadApplication = async (prog) => {
+    try {
+      const res = await axios.get(
+        `http://localhost:3000/api/applications/check/${prog.program_id}/${prog.university_id}`,
+        authHeader
+      );
+      if (!res.data.exists) return;
+
+      const appId = res.data.application.id;
+      const appRes = await axios.get(
+        `http://localhost:3000/api/applications/${appId}`,
+        authHeader
+      );
+      const app = appRes.data;
+      setApplication(app);
+      setSelectedApp(prog);
+      setNotes(
+        (app.phases || []).reduce((acc, ph) => {
+          if (ph.note) acc[ph.phase] = ph.note;
+          return acc;
+        }, {})
+      );
+    } catch (err) {
+      console.error("Error loading application:", err);
+    }
+  };
+
+  const updatePhase = async (phaseKey, completed) => {
+    try {
+      const res = await axios.patch(
+        `http://localhost:3000/api/applications/${application.id}/phase`,
+        { phase: phaseKey, completed, note: notes[phaseKey] || "" },
+        authHeader
+      );
+      setApplication(res.data);
+    } catch (err) {
+      console.error("Error updating phase:", err);
+      toast.error("⚠️ Failed to update phase", { position: "top-center" });
+    }
+  };
+
+  const calculateProgress = () => application.progress_percentage || 0;
+
+  // Pagination logic
+  const totalPages = Math.ceil(savedPrograms.length / programsPerPage);
+  const paginatedPrograms = savedPrograms.slice(
+    (currentPage - 1) * programsPerPage,
+    currentPage * programsPerPage
+  );
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
   return (
     <div
       className={`container mt-5 ${
@@ -183,7 +183,7 @@ function SavedPrograms() {
         See all your saved programs and stay updated
       </p>
       <div className="row">
-        {savedPrograms.map((app) => (
+        {paginatedPrograms.map((app) => (
           <div key={app.id} className="col-md-6 mb-3">
             <div
               className={`card h-100 ${
@@ -278,40 +278,97 @@ function SavedPrograms() {
           </div>
         ))}
       </div>
-      {/* Application Steps Modal */}
-      {selectedApp && (
-        <div className="modal-overlay" onClick={handleModalClose}>
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="d-flex justify-content-center mt-4">
+          <nav>
+            <ul className="pagination">
+              <li
+                className={`page-item ${currentPage === 1 ? "disabled" : ""}`}
+              >
+                <button
+                  className="page-link"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                >
+                  Previous
+                </button>
+              </li>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (pageNum) => (
+                  <li
+                    key={pageNum}
+                    className={`page-item ${
+                      pageNum === currentPage ? "active" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(pageNum)}
+                    >
+                      {pageNum}
+                    </button>
+                  </li>
+                )
+              )}
+              <li
+                className={`page-item ${
+                  currentPage === totalPages ? "disabled" : ""
+                }`}
+              >
+                <button
+                  className="page-link"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                >
+                  Next
+                </button>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      )}
+      {selectedApp && application && (
+        <div
+          className="modal-overlay d-flex justify-content-center align-items-center"
+          style={{
+            backgroundColor: "rgba(0, 0, 0, 0.6)",
+            zIndex: 1050,
+            backdropFilter: "blur(3px)",
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            padding: "20px",
+          }}
+          onClick={() => {
+            setSelectedApp(null);
+            setApplication(null);
+          }}
+        >
           <div
-            className={`p-4 rounded-3 shadow-lg ${
+            className={`card shadow-lg p-4 rounded-4 w-100 ${
               theme === "dark"
-                ? "bg-dark text-white border border-secondary"
-                : "bg-white text-dark border border-light"
+                ? "bg-dark text-white border-secondary"
+                : "bg-white text-dark border"
             }`}
-            style={{ maxWidth: "800px", maxHeight: "90vh", overflow: "hidden" }}
+            style={{
+              maxWidth: "800px",
+              maxHeight: "90vh",
+              overflow: "hidden",
+              position: "relative",
+            }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="d-flex justify-content-between align-items-center mb-4">
+            {/* Header */}
+            <div className="d-flex justify-content-between align-items-center mb-3">
               <div>
-                <h4
-                  className={`mb-0 text-truncate me-2 text-${
-                    theme === "dark" ? "light" : "dark"
-                  }`}
-                  style={{ maxWidth: "75%" }}
-                >
-                  {selectedApp.university}
-                </h4>
-                <p
-                  className={`mb-0 text-${theme === "dark" ? "light" : "dark"}`}
-                >
-                  {selectedApp.degree}
-                </p>
+                <h4 className="fw-bold mb-0">{selectedApp.university}</h4>
+                <p className="text-muted mb-1">{selectedApp.degree}</p>
               </div>
               <div className="text-end">
-                <p
-                  className={`mb-0 text-${theme === "dark" ? "light" : "dark"}`}
-                >
-                  {Object.values(completedSteps).filter(Boolean).length} of{" "}
-                  {steps.length} stages completed
+                <p className="mb-1 small">
+                  {application.phases.filter((ph) => ph.completed).length} of{" "}
+                  {application.phases.length} stages completed
                 </p>
                 <div className="progress" style={{ height: "8px" }}>
                   <div
@@ -322,125 +379,89 @@ function SavedPrograms() {
               </div>
             </div>
 
+            {/* Phases List */}
             <div
-              className="steps-container"
-              style={{
-                maxHeight: "60vh",
-                overflowY: "auto",
-                paddingRight: "10px",
-              }}
+              className="overflow-auto pe-2"
+              style={{ maxHeight: "60vh", paddingRight: "6px" }}
             >
-              {steps.map((step) => (
+              {application.phases.map((ph, idx) => (
                 <div
-                  key={step.id}
-                  className={`mb-4 p-3 border rounded ${
-                    currentStep === step.id
-                      ? `border-${theme === "dark" ? "warning" : "primary"}`
-                      : ""
-                  } ${theme === "dark" ? "bg-dark" : "bg-light"}`}
+                  key={ph.phase}
+                  className={`mb-4 p-3 border rounded-3 shadow-sm ${
+                    theme === "dark" ? "bg-dark" : "bg-light"
+                  }`}
                 >
                   <div className="d-flex justify-content-between align-items-center mb-2">
-                    <h5
-                      className={`mb-0 text-${
-                        theme === "dark" ? "light" : "dark"
-                      }`}
-                    >
-                      {step.id}. {step.title}
-                      {completedSteps[step.id] && (
+                    <h5 className="mb-0">
+                      {idx + 1}. {ph.title || ph.description}
+                      {ph.completed && (
                         <span className="badge bg-success ms-2">Completed</span>
                       )}
                     </h5>
-                    <div>
-                      <button
-                        className={`btn btn-sm btn-outline-${
-                          theme === "dark" ? "light" : "secondary"
-                        } me-2`}
-                        onClick={() => {
-                          const note = prompt(
-                            "Add your note:",
-                            notes[step.id] || ""
-                          );
-                          if (note !== null) handleNoteChange(step.id, note);
-                        }}
-                      >
-                        <i className="bi bi-pencil"></i> Add Note
-                      </button>
-                      <button
-                        className={`btn btn-sm ${
-                          completedSteps[step.id]
-                            ? "btn-success"
-                            : `btn-outline-success`
-                        }`}
-                        onClick={() => toggleStepCompletion(step.id)}
-                      >
-                        {completedSteps[step.id] ? (
-                          <i className="bi bi-check-circle"></i>
-                        ) : (
-                          <i className="bi bi-circle"></i>
-                        )}{" "}
-                        Mark{" "}
-                        {completedSteps[step.id] ? "Incomplete" : "Complete"}
-                      </button>
-                    </div>
                   </div>
                   <p className={`text-${theme === "dark" ? "light" : "muted"}`}>
-                    {step.description}
+                    {ph.description}
                   </p>
-                  {notes[step.id] && (
-                    <div
-                      className={`p-2 rounded mt-2 ${
-                        theme === "dark" ? "bg-secondary" : "bg-light"
-                      }`}
-                    >
-                      <p className="mb-0">
-                        <strong>Your Note:</strong> {notes[step.id]}
-                      </p>
+                  {ph.note && (
+                    <div className="bg-secondary text-white rounded p-2 mb-2">
+                      <strong>Your Note:</strong> {ph.note}
                     </div>
                   )}
+                  <div className="d-flex gap-2">
+                    <button
+                      className={`btn btn-sm btn-outline-${
+                        theme === "dark" ? "light" : "primary"
+                      }`}
+                      onClick={() => {
+                        const n = prompt(
+                          "Add your note:",
+                          notes[ph.phase] || ph.note || ""
+                        );
+                        if (n !== null) {
+                          const updatedNotes = { ...notes, [ph.phase]: n };
+                          setNotes(updatedNotes);
+                          updatePhase(ph.phase, ph.completed, updatedNotes);
+                        }
+                      }}
+                    >
+                      <i className="bi bi-pencil me-1"></i> Add Note
+                    </button>
+                    <button
+                      className={`btn btn-sm ${
+                        ph.completed ? "btn-success" : "btn-outline-success"
+                      }`}
+                      onClick={() => updatePhase(ph.phase, !ph.completed)}
+                    >
+                      <i
+                        className={`bi ${
+                          ph.completed ? "bi-check-circle-fill" : "bi-circle"
+                        }`}
+                      ></i>{" "}
+                      {ph.completed ? "Mark Incomplete" : "Mark Complete"}
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
 
-            <div className="d-flex justify-content-between mt-4">
+            {/* Footer */}
+            <div className="d-flex justify-content-end mt-4">
               <button
                 className={`btn btn-${
                   theme === "dark" ? "secondary" : "outline-secondary"
                 }`}
-                onClick={handleModalClose}
+                onClick={() => {
+                  setSelectedApp(null);
+                  setApplication(null);
+                }}
               >
                 <i className="bi bi-arrow-left"></i> Back
               </button>
-              <div className="step-navigation">
-                {currentStep > 1 && (
-                  <button
-                    className={`btn btn-outline-${
-                      theme === "dark" ? "light" : "primary"
-                    } me-2`}
-                    onClick={() => setCurrentStep(currentStep - 1)}
-                  >
-                    Previous
-                  </button>
-                )}
-                {currentStep < steps.length && (
-                  <button
-                    className={`btn btn-${
-                      theme === "dark" ? "warning" : "primary"
-                    }`}
-                    onClick={() => setCurrentStep(currentStep + 1)}
-                  >
-                    Next
-                  </button>
-                )}
-                {currentStep === steps.length && (
-                  <button className="btn btn-success">
-                    <i className="bi bi-check-circle"></i> Complete Application
-                  </button>
-                )}
-              </div>
             </div>
           </div>
         </div>
       )}
+
       <ToastContainer theme={theme} />
     </div>
   );

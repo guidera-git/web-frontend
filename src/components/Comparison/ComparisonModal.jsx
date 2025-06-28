@@ -5,32 +5,25 @@ import { ThemeContext } from "../../ThemeContext";
 const ComparisonModal = ({ university1, university2, onClose }) => {
   const { theme } = useContext(ThemeContext);
 
-  // Theme-based styles
-  const modalStyles = {
-    content: {
-      backgroundColor: theme === "dark" ? "#222222" : "#ffffff",
-      color: theme === "dark" ? "#ffffff" : "#000000",
-    },
-    table: {
-      backgroundColor: theme === "dark" ? "#222222" : "#ffffff",
-      color: theme === "dark" ? "#ffffff" : "#000000",
-    },
-    headerCell: {
-      backgroundColor: theme === "dark" ? "#0d6efd" : "#0d6efd",
-      color: "#ffffff",
-    },
-  };
-
   return (
-    <div className="modal fade show d-block" tabIndex="-1">
+    <div
+      className="modal fade show d-block"
+      tabIndex="-1"
+      style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+    >
       <div className="modal-dialog modal-lg modal-dialog-centered">
-        <div className="modal-content" style={modalStyles.content}>
+        <div
+          className={`modal-content ${
+            theme === "dark" ? "bg-dark text-white" : ""
+          }`}
+        >
           {/* Modal Header */}
-          <div className="modal-header border-1">
-            <h5
-              className="modal-title text-center w-100"
-              style={{ color: modalStyles.content.color }}
-            >
+          <div
+            className={`modal-header ${
+              theme === "dark" ? "border-secondary" : ""
+            }`}
+          >
+            <h5 className="modal-title text-center w-100">
               University Comparison
             </h5>
             <button
@@ -47,46 +40,61 @@ const ComparisonModal = ({ university1, university2, onClose }) => {
             <div className="table-responsive">
               <table
                 className={`table table-bordered ${
-                  theme === "dark" ? "border-white" : "border-dark"
+                  theme === "dark" ? "table-dark border-secondary" : ""
                 }`}
-                style={modalStyles.table}
               >
                 <thead>
                   <tr>
-                    <th style={modalStyles.headerCell}>Criteria</th>
-                    <th style={modalStyles.headerCell}>
+                    <th className="bg-primary text-white">Criteria</th>
+                    <th className="bg-primary text-white">
                       {university1.university_title || "N/A"}
                     </th>
-                    <th style={modalStyles.headerCell}>
+                    <th className="bg-primary text-white">
                       {university2.university_title || "N/A"}
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td style={modalStyles.headerCell}>
-                      <strong>Degree</strong>
+                    <td
+                      className={`fw-bold ${
+                        theme === "dark" ? "bg-secondary" : "bg-light"
+                      }`}
+                    >
+                      Degree
                     </td>
                     <td>{university1.program_title || "N/A"}</td>
                     <td>{university2.program_title || "N/A"}</td>
                   </tr>
                   <tr>
-                    <td style={modalStyles.headerCell}>
-                      <strong>Duration</strong>
+                    <td
+                      className={`fw-bold ${
+                        theme === "dark" ? "bg-secondary" : "bg-light"
+                      }`}
+                    >
+                      Duration
                     </td>
                     <td>{university1.program_duration || "N/A"}</td>
                     <td>{university2.program_duration || "N/A"}</td>
                   </tr>
                   <tr>
-                    <td style={modalStyles.headerCell}>
-                      <strong>Tuition Fee</strong>
+                    <td
+                      className={`fw-bold ${
+                        theme === "dark" ? "bg-secondary" : "bg-light"
+                      }`}
+                    >
+                      Tuition Fee
                     </td>
                     <td>{university1.fee[0]?.total_tution_fee || "N/A"}</td>
                     <td>{university2.fee[0]?.total_tution_fee || "N/A"}</td>
                   </tr>
                   <tr>
-                    <td style={modalStyles.headerCell}>
-                      <strong>Beginning</strong>
+                    <td
+                      className={`fw-bold ${
+                        theme === "dark" ? "bg-secondary" : "bg-light"
+                      }`}
+                    >
+                      Beginning
                     </td>
                     <td>
                       {university1.important_dates[0]
@@ -98,15 +106,23 @@ const ComparisonModal = ({ university1, university2, onClose }) => {
                     </td>
                   </tr>
                   <tr>
-                    <td style={modalStyles.headerCell}>
-                      <strong>Location</strong>
+                    <td
+                      className={`fw-bold ${
+                        theme === "dark" ? "bg-secondary" : "bg-light"
+                      }`}
+                    >
+                      Location
                     </td>
                     <td>{university1.location || "N/A"}</td>
                     <td>{university2.location || "N/A"}</td>
                   </tr>
                   <tr>
-                    <td style={modalStyles.headerCell}>
-                      <strong>Rating</strong>
+                    <td
+                      className={`fw-bold ${
+                        theme === "dark" ? "bg-secondary" : "bg-light"
+                      }`}
+                    >
+                      Rating
                     </td>
                     <td>{university1.qs_ranking || "N/A"}</td>
                     <td>{university2.qs_ranking || "N/A"}</td>
@@ -117,12 +133,16 @@ const ComparisonModal = ({ university1, university2, onClose }) => {
           </div>
 
           {/* Modal Footer */}
-          <div className="modal-footer border-0">
+          <div
+            className={`modal-footer ${
+              theme === "dark" ? "border-secondary" : ""
+            }`}
+          >
             <button
               type="button"
-              className={`btn btn-${
-                theme === "dark" ? "light" : "primary"
-              } text-${theme === "dark" ? "dark" : "white"}`}
+              className={`btn ${
+                theme === "dark" ? "btn-light" : "btn-primary"
+              }`}
               onClick={onClose}
             >
               Close

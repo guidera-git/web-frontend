@@ -30,15 +30,24 @@ const UniversityList = ({
   const [loading, setLoading] = useState(false);
   const [savedId, setSavedId] = useState(null);
   const [applicationStarted, setApplicationStarted] = useState(false);
+  const [showAppPrompt, setShowAppPrompt] = useState(false);
 
   const universityId =
     university?.university_id || university?.id || university?.uid;
   const token = localStorage.getItem("token");
   const authHeader = { headers: { Authorization: `Bearer ${token}` } };
   const programId = university.program_id;
+
+  useEffect(() => {
+    if (isComparisonCleared) {
+      setIsSelectedForComparison(false);
+    }
+  }, [isComparisonCleared]);
+
   useEffect(() => {
     if (programId && token) {
       checkIfProgramIsSaved();
+      checkAndSetApplicationStatus(); // 👈 ensure status reflects bookmark toggle
     }
   }, [programId, token]);
 
@@ -68,10 +77,8 @@ const UniversityList = ({
       console.error("Error checking saved status:", error);
     }
   };
-  // 👇 Add this new state
-  const [showAppPrompt, setShowAppPrompt] = useState(false);
 
-  // 👇 Replace only the toggleBookmark logic with this version:
+  // ✨ Updated toggleBookmark with smart prompt condition
   const toggleBookmark = async () => {
     if (!token) {
       toast.error("Please log in to save programs.");
@@ -107,8 +114,10 @@ const UniversityList = ({
           setSavedId(savedProgram.id);
           toast.success("Bookmarked successfully.");
 
-          // 🔔 Show Bootstrap modal instead of window.confirm
-          setShowAppPrompt(true);
+          // ✨ Show prompt only if not already started
+          if (!applicationStarted) {
+            setShowAppPrompt(true);
+          }
         } else {
           throw new Error("Invalid save response format.");
         }
@@ -123,6 +132,7 @@ const UniversityList = ({
     }
   };
 
+  // ✨ New: Enhanced handler that checks deadline before starting application
   const handleStartApplication = async () => {
     if (!token) {
       toast.error("You must be logged in to start an application.");
@@ -136,7 +146,19 @@ const UniversityList = ({
     }
 
     try {
-      console.log("📌 Checking existing application...");
+      // 🔒 Check deadline
+      const deadlineCheck = await axios.get(
+        `http://localhost:3000/api/programs/${programId}/${universityId}/deadline-check`,
+        authHeader
+      );
+
+      if (!deadlineCheck.data.canApply) {
+        toast.error(deadlineCheck.data.reason);
+        setShowAppPrompt(false);
+        return;
+      }
+
+      // 🔄 Proceed only if not already started
       const checkRes = await axios.get(
         `http://localhost:3000/api/applications/check/${programId}/${universityId}`,
         authHeader
@@ -148,8 +170,6 @@ const UniversityList = ({
           university_id: universityId,
         };
 
-        console.log("📤 Sending application payload:", appPayload);
-
         const createRes = await axios.post(
           "http://localhost:3000/api/applications",
           appPayload,
@@ -158,13 +178,15 @@ const UniversityList = ({
 
         if (createRes.status === 201) {
           toast.success(
-            "Application started successfully. Deadlines will be tracked."
+            "✅ Application started successfully. Deadlines will be tracked."
           );
+          setApplicationStarted(true); // ✨ Trigger state update
         } else {
           toast.error("Unexpected response from server.");
         }
       } else {
         toast.info("You already have an application for this program.");
+        setApplicationStarted(true);
       }
     } catch (error) {
       console.error("❌ Application creation error:", error);
@@ -181,10 +203,24 @@ const UniversityList = ({
     }
   };
 
+  const checkAndSetApplicationStatus = async () => {
+    if (!token || !programId || !universityId) return;
+
+    try {
+      const res = await axios.get(
+        `http://localhost:3000/api/applications/check/${programId}/${universityId}`,
+        authHeader
+      );
+      setApplicationStarted(res.data.exists);
+    } catch (error) {
+      console.error("Error checking application status:", error);
+    }
+  };
   const handleComparisonClick = () => {
     if (isComparisonDisabled && !isSelectedForComparison) return;
-    setIsSelectedForComparison((prev) => !prev);
-    onCompare(university);
+    const newSelectedState = !isSelectedForComparison;
+    setIsSelectedForComparison(newSelectedState);
+    onCompare(university, newSelectedState);
   };
 
   const handleShowModal = async () => {
@@ -204,22 +240,7 @@ const UniversityList = ({
       }
     }
   };
-  const checkAndSetApplicationStatus = async () => {
-    if (!token || !programId || !universityId) return;
 
-    try {
-      const res = await axios.get(
-        `http://localhost:3000/api/applications/check/${programId}/${universityId}`,
-        authHeader
-      );
-      setApplicationStarted(res.data.exists);
-    } catch (error) {
-      console.error("Error checking application status:", error);
-    }
-  };
-  useEffect(() => {
-    checkAndSetApplicationStatus();
-  }, [programId, universityId]);
   const handleApply = async () => {
     if (!token) {
       toast.error("Please log in to apply.");
@@ -250,8 +271,14 @@ const UniversityList = ({
         setApplicationStarted(true);
       }
     } catch (err) {
-      console.error("❌ Error starting application:", err);
-      toast.error("Something went wrong. Try again later.");
+      const backendMessage =
+        err?.response?.data?.error || err?.response?.data?.message;
+
+      if (backendMessage) {
+        toast.error(`🚫 ${backendMessage}`);
+      } else {
+        toast.error("❌ Something went wrong. Please try again later.");
+      }
     }
   };
 
@@ -263,10 +290,26 @@ const UniversityList = ({
     return programDetails?.[key] ?? university?.[key] ?? "N/A";
   };
 
+  // Helper function to safely get fee data
+  const getFeeData = (feeKey) => {
+    if (Array.isArray(university?.fee) && university.fee.length > 0) {
+      return university.fee[0][feeKey] || "N/A";
+    }
+    return "N/A";
+  };
+
+  // Helper function to format fee display
+  const formatFee = (fee) => {
+    if (!fee || fee === "N/A") return "N/A";
+    if (typeof fee === "string" && fee.includes("PKR")) return fee;
+    return ` ${fee}`;
+  };
+
   if (!university) return null;
 
   return (
     <>
+      {/* ✨ Modal shown only if app not started */}
       <Modal
         show={showAppPrompt}
         onHide={() => setShowAppPrompt(false)}
@@ -288,6 +331,7 @@ const UniversityList = ({
           </Button>
         </Modal.Footer>
       </Modal>
+
       <div
         className={`university-card container p-4 rounded shadow-lg ${
           theme === "dark" ? "bg-dark text-light" : "bg-light text-dark"
@@ -311,10 +355,10 @@ const UniversityList = ({
               onClick={toggleBookmark}
               style={{ cursor: "pointer", fontSize: "1.5rem" }}
             ></i>
-
+            {/* Comparison & Info icons */}
             <i
               className={`bi bi-arrow-left-right ${
-                isSelectedForComparison ? "text-primary" : "text-white"
+                isSelectedForComparison ? "text-primary" : ""
               } ${
                 isComparisonDisabled && !isSelectedForComparison
                   ? "text-muted"
@@ -328,13 +372,7 @@ const UniversityList = ({
                 fontSize: "1.5rem",
               }}
               onClick={handleComparisonClick}
-              title={
-                isComparisonDisabled && !isSelectedForComparison
-                  ? "Only two universities can be compared at a time"
-                  : "Add to comparison"
-              }
             ></i>
-
             <i
               className="bi bi-info-circle"
               style={{ fontSize: "1.2rem", cursor: "pointer" }}
@@ -356,6 +394,7 @@ const UniversityList = ({
             </button>
           </div>
 
+          {/* Program Info */}
           <div className="col-6">
             <p className="mb-1">Degree</p>
             <h6 className="fw-bold">
@@ -371,37 +410,50 @@ const UniversityList = ({
           <div className="col-6 text-end">
             <p className="mb-1">Duration</p>
             <h6 className="fw-bold">{university?.program_duration || "N/A"}</h6>
-
             <p className="mb-1">Tuition Fee Per Credit Hour</p>
             <h6 className="fw-bold mt-1">
-              {Array.isArray(university?.fee) &&
-              university.fee[0]?.per_credit_hour_fee
-                ? university.fee[0].per_credit_hour_fee
-                : "N/A"}
+              {formatFee(getFeeData("per_credit_hour_fee"))}
             </h6>
             <p className="mb-1">Total Fee</p>
             <h6 className="fw-bold mt-1">
-              {Array.isArray(university?.fee) &&
-              university.fee[0]?.total_tution_fee
-                ? university.fee[0].total_tution_fee
-                : "N/A"}
+              {formatFee(getFeeData("total_tution_fee")) !== "N/A"
+                ? formatFee(getFeeData("total_tution_fee"))
+                : formatFee(university?.calculated_total_fee)}
             </h6>
           </div>
         </div>
       </div>
 
-      {/* Modal - uses API data when available, falls back to props */}
-      <Modal show={showModal} onHide={handleCloseModal} size="lg" centered>
-        <Modal.Header closeButton className="bg-primary text-white">
+      <Modal
+        show={showModal}
+        onHide={handleCloseModal}
+        size="lg"
+        centered
+        className={theme === "dark" ? "dark-modal" : ""}
+      >
+        <Modal.Header
+          closeButton
+          className={`bg-primary text-white ${
+            theme === "dark" ? "border-secondary" : ""
+          }`}
+        >
           <Modal.Title>
             {getData("university_title") || "University Details"}
           </Modal.Title>
         </Modal.Header>
-        <Modal.Body style={{ backgroundColor: "#222222", color: "white" }}>
+
+        <Modal.Body
+          className={theme === "dark" ? "bg-dark text-white" : "bg-white"}
+        >
           {loading ? (
             <div className="text-center py-4">
-              <Spinner animation="border" variant="light" />
-              <p>Loading program details...</p>
+              <Spinner
+                animation="border"
+                variant={theme === "dark" ? "light" : "primary"}
+              />
+              <p className={theme === "dark" ? "text-light" : ""}>
+                Loading program details...
+              </p>
             </div>
           ) : (
             <Tab.Container defaultActiveKey="overview">
@@ -417,15 +469,20 @@ const UniversityList = ({
                       "about",
                     ].map((key) => (
                       <Nav.Item key={key}>
-                        <Nav.Link eventKey={key}>
+                        <Nav.Link
+                          eventKey={key}
+                          className={theme === "dark" ? "text-white" : ""}
+                        >
                           {key.charAt(0).toUpperCase() + key.slice(1)}
                         </Nav.Link>
                       </Nav.Item>
                     ))}
                   </Nav>
                 </Col>
+
                 <Col sm={9}>
                   <Tab.Content>
+                    {/* Overview Tab */}
                     <Tab.Pane eventKey="overview">
                       <h5>Overview</h5>
                       <p>
@@ -433,143 +490,200 @@ const UniversityList = ({
                           getData("overview") ||
                           "No overview available."}
                       </p>
-                      <p className="mb-1">
-                        <strong>Total Fee: </strong>
-
-                        {Array.isArray(university?.fee) &&
-                        university.fee[0]?.total_tution_fee
-                          ? university.fee[0].total_tution_fee
-                          : "N/A"}
-                      </p>
-                      <p>
-                        <strong>Credit Hours:</strong>{" "}
-                        {getData("credit_hours") || "N/A"}
-                      </p>
-                      <p>
-                        <strong>Duration:</strong>{" "}
-                        {getData("program_duration") || "N/A"}
-                      </p>
-                      <p>
-                        <strong>Location: </strong>
-                        {getData("location") || "N/A"}
-                      </p>
-                      <p>
-                        <strong>Additional Locations:</strong>{" "}
-                        {getData("additional_locations") ||
-                          "No additional locations"}
-                      </p>
-                      <p>
-                        <strong>
-                          QS Ranking: {getData("qs_ranking") || "N/A"}
-                        </strong>
-                      </p>
-                    </Tab.Pane>
-                    <Tab.Pane eventKey="courseDetails">
-                      <h5 className="mt-3">Course Details</h5>
                       <ListGroup>
-                        <ListGroup.Item>
-                          <strong>Program Title:</strong>{" "}
-                          {getData("program_title") || "N/A"}
-                        </ListGroup.Item>
-                        <ListGroup.Item>
-                          <strong>Credit Hours:</strong>{" "}
-                          {getData("credit_hours") || "N/A"}
-                        </ListGroup.Item>
-                        <ListGroup.Item>
-                          <strong>Duration:</strong>{" "}
-                          {getData("program_duration") || "N/A"}
-                        </ListGroup.Item>
-                        <ListGroup.Item>
-                          <strong>Teaching System:</strong>{" "}
-                          {getData("teaching_system") || "N/A"}
-                        </ListGroup.Item>
-                        <ListGroup.Item>
-                          <strong>Description:</strong>{" "}
-                          {getData("program_description") || "N/A"}
-                        </ListGroup.Item>
-                        <ListGroup.Item>
-                          <strong>Course Outline:</strong>{" "}
-                          {!getData("course_outline") ? (
-                            "Not provided"
-                          ) : (
-                            <a
-                              href={getData("course_outline")}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              View Outline
-                            </a>
-                          )}
-                        </ListGroup.Item>
+                        {[
+                          {
+                            label: "Total Fee",
+                            value:
+                              formatFee(getFeeData("total_tution_fee")) !==
+                              "N/A"
+                                ? formatFee(getFeeData("total_tution_fee"))
+                                : formatFee(getData("calculated_total_fee")),
+                          },
+                          {
+                            label: "Credit Hours",
+                            value: getData("credit_hours") || "N/A",
+                          },
+                          {
+                            label: "Duration",
+                            value: getData("program_duration") || "N/A",
+                          },
+                          {
+                            label: "Location",
+                            value: getData("location") || "N/A",
+                          },
+                          {
+                            label: "Additional Locations",
+                            value:
+                              getData("additional_locations") ||
+                              "No additional locations",
+                          },
+                          {
+                            label: "QS Ranking",
+                            value: getData("qs_ranking") || "N/A",
+                          },
+                        ].map((item, index) => (
+                          <ListGroup.Item
+                            key={index}
+                            className={
+                              theme === "dark" ? "bg-secondary text-white" : ""
+                            }
+                          >
+                            <strong>{item.label}:</strong> {item.value}
+                          </ListGroup.Item>
+                        ))}
                       </ListGroup>
                     </Tab.Pane>
 
+                    {/* Course Details Tab */}
+                    <Tab.Pane eventKey="courseDetails">
+                      <h5 className="mt-3">Course Details</h5>
+                      <ListGroup>
+                        {[
+                          {
+                            label: "Program Title",
+                            value: getData("program_title") || "N/A",
+                          },
+                          {
+                            label: "Credit Hours",
+                            value: getData("credit_hours") || "N/A",
+                          },
+                          {
+                            label: "Duration",
+                            value: getData("program_duration") || "N/A",
+                          },
+                          {
+                            label: "Teaching System",
+                            value: getData("teaching_system") || "N/A",
+                          },
+                          {
+                            label: "Description",
+                            value: getData("program_description") || "N/A",
+                          },
+                          {
+                            label: "Course Outline",
+                            value: !getData("course_outline") ? (
+                              "Not provided"
+                            ) : (
+                              <a
+                                href={getData("course_outline")}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={
+                                  theme === "dark"
+                                    ? "text-info"
+                                    : "text-primary"
+                                }
+                              >
+                                View Outline
+                              </a>
+                            ),
+                          },
+                        ].map((item, index) => (
+                          <ListGroup.Item
+                            key={index}
+                            className={
+                              theme === "dark" ? "bg-secondary text-white" : ""
+                            }
+                          >
+                            <strong>{item.label}:</strong> {item.value}
+                          </ListGroup.Item>
+                        ))}
+                      </ListGroup>
+                    </Tab.Pane>
+
+                    {/* Requirements Tab */}
                     <Tab.Pane eventKey="requirements">
                       <h5>Admission Requirements</h5>
                       <ListGroup>
                         {Array.isArray(getData("admission_criteria")) &&
                         getData("admission_criteria").length > 0 ? (
-                          getData("admission_criteria").map((item, i) =>
-                            typeof item === "object" ? (
-                              <ListGroup.Item key={i}>
-                                {item.criteria ||
+                          getData("admission_criteria").map((item, i) => (
+                            <ListGroup.Item
+                              key={i}
+                              className={
+                                theme === "dark"
+                                  ? "bg-secondary text-white"
+                                  : ""
+                              }
+                            >
+                              {typeof item === "object"
+                                ? item.criteria ||
                                   item["s.no"] ||
-                                  JSON.stringify(item)}
-                              </ListGroup.Item>
-                            ) : (
-                              <ListGroup.Item key={i}>{item}</ListGroup.Item>
-                            )
-                          )
+                                  JSON.stringify(item)
+                                : item}
+                            </ListGroup.Item>
+                          ))
                         ) : (
-                          <ListGroup.Item>No criteria</ListGroup.Item>
+                          <ListGroup.Item
+                            className={
+                              theme === "dark" ? "bg-secondary text-white" : ""
+                            }
+                          >
+                            No criteria available
+                          </ListGroup.Item>
                         )}
                       </ListGroup>
                     </Tab.Pane>
+
+                    {/* Registration Tab */}
                     <Tab.Pane eventKey="registration">
                       <h5>Important Dates</h5>
                       <ListGroup>
                         {Array.isArray(getData("important_dates")) &&
                         getData("important_dates").length > 0 ? (
-                          getData("important_dates").map((item, i) => {
-                            if (
-                              typeof item === "object" &&
+                          getData("important_dates").map((item, i) => (
+                            <ListGroup.Item
+                              key={i}
+                              className={
+                                theme === "dark"
+                                  ? "bg-secondary text-white"
+                                  : ""
+                              }
+                            >
+                              {typeof item === "object" &&
                               item.criteria &&
-                              item.date
-                            ) {
-                              return (
-                                <ListGroup.Item key={i}>
+                              item.date ? (
+                                <>
                                   <strong>{item.criteria}</strong>:{" "}
                                   {new Date(item.date).toLocaleDateString()}
-                                </ListGroup.Item>
-                              );
-                            } else if (typeof item === "object") {
-                              return (
-                                <ListGroup.Item key={i}>
-                                  {Object.entries(item).map(([key, value]) => (
-                                    <div key={key}>
-                                      <strong>{key}</strong>: {String(value)}
-                                    </div>
-                                  ))}
-                                </ListGroup.Item>
-                              );
-                            } else {
-                              return (
-                                <ListGroup.Item key={i}>
-                                  {String(item)}
-                                </ListGroup.Item>
-                              );
-                            }
-                          })
+                                </>
+                              ) : typeof item === "object" ? (
+                                Object.entries(item).map(([key, value]) => (
+                                  <div key={key}>
+                                    <strong>{key}</strong>: {String(value)}
+                                  </div>
+                                ))
+                              ) : (
+                                String(item)
+                              )}
+                            </ListGroup.Item>
+                          ))
                         ) : (
-                          <ListGroup.Item>No important dates</ListGroup.Item>
+                          <ListGroup.Item
+                            className={
+                              theme === "dark" ? "bg-secondary text-white" : ""
+                            }
+                          >
+                            No important dates available
+                          </ListGroup.Item>
                         )}
                       </ListGroup>
 
-                      <h5>Teaching System</h5>
-                      <p>
-                        {getData("teaching_system") || "No registration info."}
-                      </p>
+                      <h5 className="mt-3">Teaching System</h5>
+                      <ListGroup>
+                        <ListGroup.Item
+                          className={
+                            theme === "dark" ? "bg-secondary text-white" : ""
+                          }
+                        >
+                          {getData("teaching_system") ||
+                            "No registration info."}
+                        </ListGroup.Item>
+                      </ListGroup>
                     </Tab.Pane>
+
+                    {/* Fee Tab */}
                     <Tab.Pane eventKey="fee">
                       <h5>Fee Details</h5>
                       <ListGroup>
@@ -579,69 +693,93 @@ const UniversityList = ({
                           <>
                             {Object.entries(getData("fee")[0]).map(
                               ([key, val]) => (
-                                <ListGroup.Item key={key}>
+                                <ListGroup.Item
+                                  key={key}
+                                  className={
+                                    theme === "dark"
+                                      ? "bg-secondary text-white"
+                                      : ""
+                                  }
+                                >
                                   <strong>{key}:</strong> {val}
                                 </ListGroup.Item>
                               )
                             )}
-                            <ListGroup.Item>
+                            <ListGroup.Item
+                              className={
+                                theme === "dark"
+                                  ? "bg-secondary text-white"
+                                  : ""
+                              }
+                            >
                               <strong>Credit Hours:</strong>{" "}
                               {getData("credit_hours")}
                             </ListGroup.Item>
                           </>
                         ) : (
-                          <ListGroup.Item>No fee info</ListGroup.Item>
+                          <ListGroup.Item
+                            className={
+                              theme === "dark" ? "bg-secondary text-white" : ""
+                            }
+                          >
+                            No fee information available
+                          </ListGroup.Item>
                         )}
                       </ListGroup>
                     </Tab.Pane>
 
+                    {/* About Tab */}
                     <Tab.Pane eventKey="about">
                       <h5>{getData("university_title")}</h5>
-                      <p>
-                        {getData("introduction") || "No information available."}
-                      </p>
-                      <p>
-                        <strong>Location: </strong>
-                        {getData("location") || "N/A"}
-                      </p>
-                      <p>
-                        <strong>Additional Locations:</strong>{" "}
-                        {getData("additional_locations") ||
-                          "No additional locations"}
-                      </p>
-                      <p>
-                        <strong>
-                          QS Ranking: {getData("qs_ranking") || "N/A"}
-                        </strong>
-                      </p>
-                      <p>
-                        <strong>Contact:</strong>
-                        <br />
-                        {getData("contact_details")?.call ||
-                        getData("contact")?.phone ? (
-                          <>
-                            <strong> Call:</strong>{" "}
-                            {getData("contact_details")?.call ||
-                              getData("contact")?.phone}
-                            <br />
-                          </>
-                        ) : null}
-                        {getData("contact_details")?.info_email ||
-                        getData("contact")?.email ? (
-                          <>
-                            <strong> Email:</strong>{" "}
-                            {getData("contact_details")?.info_email ||
-                              getData("contact")?.email}
-                          </>
-                        ) : null}
-                      </p>
-                      <p>
-                        <strong>Social Links:</strong>
-                        <br />
-                        {getData("social_links")
-                          ? Object.entries(getData("social_links")).map(
+                      <ListGroup className="mb-3">
+                        <ListGroup.Item
+                          className={
+                            theme === "dark" ? "bg-secondary text-white" : ""
+                          }
+                        >
+                          {getData("introduction") ||
+                            "No information available."}
+                        </ListGroup.Item>
+                      </ListGroup>
+
+                      <h5>Contact Information</h5>
+                      <ListGroup>
+                        <ListGroup.Item
+                          className={
+                            theme === "dark" ? "bg-secondary text-white" : ""
+                          }
+                        >
+                          <strong>Phone:</strong>{" "}
+                          {getData("contact_details")?.call ||
+                            getData("contact")?.phone ||
+                            "N/A"}
+                        </ListGroup.Item>
+                        <ListGroup.Item
+                          className={
+                            theme === "dark" ? "bg-secondary text-white" : ""
+                          }
+                        >
+                          <strong>Email:</strong>{" "}
+                          {getData("contact_details")?.info_email ||
+                            getData("contact")?.email ||
+                            "N/A"}
+                        </ListGroup.Item>
+                      </ListGroup>
+
+                      {getData("social_links") && (
+                        <>
+                          <h5 className="mt-3">Social Links</h5>
+                          <ListGroup>
+                            {Object.entries(getData("social_links")).map(
                               ([key, value]) => (
-                                <span key={key}>
+                                <ListGroup.Item
+                                  key={key}
+                                  className={
+                                    theme === "dark"
+                                      ? "bg-secondary text-white"
+                                      : ""
+                                  }
+                                >
                                   <strong>
                                     {key.charAt(0).toUpperCase() + key.slice(1)}
                                     :
@@ -650,58 +788,86 @@ const UniversityList = ({
                                     href={value}
                                     target="_blank"
                                     rel="noopener noreferrer"
+                                    className={
+                                      theme === "dark"
+                                        ? "text-info"
+                                        : "text-primary"
+                                    }
                                   >
                                     {value}
                                   </a>
-                                  <br />
-                                </span>
-                              )
-                            )
-                          : "No social links"}
-                      </p>
-
-                      <div className="text-break">
-                        <strong>Campuses Location:</strong>
-                        <ul className="mt-2">
-                          {getData("campuses") &&
-                            typeof getData("campuses") === "object" &&
-                            Object.entries(getData("campuses")).map(
-                              ([campusName, link]) => (
-                                <li key={campusName}>
-                                  <strong>
-                                    {campusName
-                                      .replace(/_/g, " ")
-                                      .replace(/\b\w/g, (l) => l.toUpperCase())}
-                                    :
-                                  </strong>{" "}
-                                  <a
-                                    href={link}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-light text-break"
-                                  >
-                                    {link}
-                                  </a>
-                                </li>
+                                </ListGroup.Item>
                               )
                             )}
-                        </ul>
-                      </div>
+                          </ListGroup>
+                        </>
+                      )}
 
-                      <p>
-                        <strong>Main Link:</strong>{" "}
-                        {getData("main_link") || getData("link") ? (
-                          <a
-                            href={getData("main_link") || getData("link")}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            {getData("main_link") || getData("link")}
-                          </a>
-                        ) : (
-                          "N/A"
+                      {getData("campuses") &&
+                        typeof getData("campuses") === "object" && (
+                          <>
+                            <h5 className="mt-3">Campuses Location</h5>
+                            <ListGroup>
+                              {Object.entries(getData("campuses")).map(
+                                ([campusName, link]) => (
+                                  <ListGroup.Item
+                                    key={campusName}
+                                    className={
+                                      theme === "dark"
+                                        ? "bg-secondary text-white"
+                                        : ""
+                                    }
+                                  >
+                                    <strong>
+                                      {campusName
+                                        .replace(/_/g, " ")
+                                        .replace(/\b\w/g, (l) =>
+                                          l.toUpperCase()
+                                        )}
+                                      :
+                                    </strong>{" "}
+                                    <a
+                                      href={link}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className={
+                                        theme === "dark"
+                                          ? "text-info"
+                                          : "text-primary"
+                                      }
+                                    >
+                                      {link}
+                                    </a>
+                                  </ListGroup.Item>
+                                )
+                              )}
+                            </ListGroup>
+                          </>
                         )}
-                      </p>
+
+                      <h5 className="mt-3">Main Link</h5>
+                      <ListGroup>
+                        <ListGroup.Item
+                          className={
+                            theme === "dark" ? "bg-secondary text-white" : ""
+                          }
+                        >
+                          {getData("main_link") || getData("link") ? (
+                            <a
+                              href={getData("main_link") || getData("link")}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={
+                                theme === "dark" ? "text-info" : "text-primary"
+                              }
+                            >
+                              {getData("main_link") || getData("link")}
+                            </a>
+                          ) : (
+                            "N/A"
+                          )}
+                        </ListGroup.Item>
+                      </ListGroup>
                     </Tab.Pane>
                   </Tab.Content>
                 </Col>
@@ -709,10 +875,12 @@ const UniversityList = ({
             </Tab.Container>
           )}
         </Modal.Body>
-        <Modal.Footer style={{ backgroundColor: "#222222", color: "white" }}>
+
+        <Modal.Footer
+          className={`${theme === "dark" ? "bg-dark border-secondary" : ""}`}
+        >
           <Button
-            variant="secondary"
-            className="btn-primary"
+            variant={theme === "dark" ? "outline-light" : "primary"}
             onClick={handleCloseModal}
           >
             Close

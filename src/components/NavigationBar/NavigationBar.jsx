@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useContext } from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState, useContext } from "react";
+import { Link, useLocation } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Navbar, Nav, Container, NavDropdown } from "react-bootstrap";
 import { ThemeContext } from "../../ThemeContext";
@@ -9,9 +9,25 @@ import Notification from "../Notification/Notification";
 
 function NavigationBar() {
   const { theme, toggleTheme } = useContext(ThemeContext);
-  const [activeLink, setActiveLink] = useState("Home");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [profilePhoto, setProfilePhoto] = useState(null);
+
+  const location = useLocation();
+  const currentPath = location.pathname;
+
+  const getActiveLink = () => {
+    if (currentPath === "/") return "Home";
+    if (currentPath === "/FindUniversity") return "Find University";
+    if (currentPath === "/chatbot") return "Chatbot";
+    if (currentPath === "/TestPreparation") return "Test Preparation";
+    if (currentPath === "/tracking") return "Tracking & Analysis";
+    if (currentPath === "/saved") return "Saved Programs";
+    if (currentPath === "/contactus") return "Contact Us";
+    if (currentPath === "/aboutus") return "About Us";
+    return "";
+  };
+
+  const activeLink = getActiveLink();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -58,14 +74,13 @@ function NavigationBar() {
 
         <Navbar.Collapse id="navbar-nav">
           <Nav className="mx-auto d-flex align-items-center">
-            {/* Home Link */}
+            {/* Home */}
             <Nav.Link
               as={Link}
               to="/"
               className={`nav-link mx-0 ${
                 activeLink === "Home" ? "active-link" : "inactive-link"
               }`}
-              onClick={() => setActiveLink("Home")}
             >
               Home
             </Nav.Link>
@@ -87,16 +102,11 @@ function NavigationBar() {
             >
               {[
                 { name: "Find University", path: "/FindUniversity" },
-                { name: "Chatbot", path: "/chatbot" },
                 { name: "Test Preparation", path: "/TestPreparation" },
+                { name: "Chatbot", path: "/chatbot" },
                 { name: "Tracking & Analysis", path: "/tracking" },
               ].map(({ name, path }) => (
-                <NavDropdown.Item
-                  as={Link}
-                  to={path}
-                  key={name}
-                  onClick={() => setActiveLink(name)}
-                >
+                <NavDropdown.Item as={Link} to={path} key={name}>
                   {name}
                 </NavDropdown.Item>
               ))}
@@ -111,7 +121,6 @@ function NavigationBar() {
                   ? "active-link"
                   : "inactive-link"
               }`}
-              onClick={() => setActiveLink("Saved Programs")}
             >
               Saved Programs
             </Nav.Link>
@@ -123,7 +132,6 @@ function NavigationBar() {
               className={`nav-link mx-0 ${
                 activeLink === "Contact Us" ? "active-link" : "inactive-link"
               }`}
-              onClick={() => setActiveLink("Contact Us")}
             >
               Contact Us
             </Nav.Link>
@@ -135,12 +143,12 @@ function NavigationBar() {
               className={`nav-link mx-0 ${
                 activeLink === "About Us" ? "active-link" : "inactive-link"
               }`}
-              onClick={() => setActiveLink("About Us")}
             >
               About Us
             </Nav.Link>
           </Nav>
 
+          {/* Right Section: Notification, Theme Toggle, Auth Buttons */}
           <div className="d-flex align-items-center gap-3">
             <Notification />
 

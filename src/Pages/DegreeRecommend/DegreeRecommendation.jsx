@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { ThemeContext } from "../../ThemeContext"; // Adjust path as needed
 
 const DegreeRecommendation = () => {
+  const { theme } = useContext(ThemeContext);
   const navigate = useNavigate();
   const location = useLocation();
   const { predictionResult } = location.state || {};
@@ -9,6 +11,7 @@ const DegreeRecommendation = () => {
   if (!predictionResult) {
     return null;
   }
+
   const careerInsights = {
     "Software Engineering": {
       marketDemand: "High",
@@ -155,9 +158,17 @@ const DegreeRecommendation = () => {
       state: { program: predictionResult.predicted_degree },
     });
   };
-
+  // Theme-based styling variables
+  const cardHeaderBg = theme === "dark" ? "bg-dark" : "bg-primary";
+  const cardBg = theme === "dark" ? "bg-secondary text-white" : "bg-white";
+  const borderColor = theme === "dark" ? "border-light" : "border-dark";
+  const textMuted = theme === "dark" ? "text-light" : "text-muted";
   return (
-    <div className="container py-4">
+    <div
+      className={`container py-4 ${
+        theme === "dark" ? "bg-dark text-white" : ""
+      }`}
+    >
       <div className="text-center mb-4">
         <h2 className="mt-3">Hi, {predictionResult.name || "User"}!</h2>
         <p className="lead">
@@ -167,20 +178,24 @@ const DegreeRecommendation = () => {
       </div>
 
       {/* Top Recommended Field */}
-      <div className="card mb-4 shadow-sm">
-        <div className="card-header bg-primary text-white">
+      <div className={`card mb-4 shadow-sm ${cardBg}`}>
+        <div className={`card-header ${cardHeaderBg} text-white`}>
           <h3 className="mb-0">Top Recommended Field</h3>
         </div>
         <div className="card-body text-center">
-          <h2 className="text-success mb-4">
+          <h2
+            className={`mb-4 ${theme === "dark" ? "text-white" : "text-dark"}`}
+          >
             {predictionResult.predicted_degree}
           </h2>
         </div>
       </div>
 
       {/* Career Insights */}
-      <div className="card mb-4 shadow-sm">
-        <div className="card-header bg-light">
+      <div className={`card mb-4 shadow-sm ${cardBg}`}>
+        <div
+          className={`card-header ${theme === "dark" ? "bg-dark" : "bg-light"}`}
+        >
           <h3 className="mb-0">Career Insights</h3>
         </div>
         <div className="card-body">
@@ -203,7 +218,7 @@ const DegreeRecommendation = () => {
                 </span>
               </div>
               <div className="mt-2">
-                <small className="text-muted">Starting Salary</small>
+                <small className={textMuted}>Starting Salary</small>
                 <p className="mb-0">{insights.startingSalary}</p>
               </div>
             </div>
@@ -213,7 +228,7 @@ const DegreeRecommendation = () => {
                 <span>{insights.growthRate}</span>
               </div>
               <div className="mt-2">
-                <small className="text-muted">Job Security</small>
+                <small className={textMuted}>Job Security</small>
                 <p className="mb-0">{insights.jobSecurity}</p>
               </div>
             </div>
@@ -229,13 +244,18 @@ const DegreeRecommendation = () => {
       </div>
 
       {/* Alternative Recommendations */}
-      <div className="card mb-4 shadow-sm">
-        <div className="card-header bg-light">
+      <div className={`card mb-4 shadow-sm ${cardBg}`}>
+        <div
+          className={`card-header ${theme === "dark" ? "bg-dark" : "bg-light"}`}
+        >
           <h3 className="mb-0">Alternative Recommendations</h3>
         </div>
         <div className="card-body">
           {alternatives.map((alt, index) => (
-            <div key={index} className="mb-3 p-3 border rounded">
+            <div
+              key={index}
+              className={`mb-3 p-3 border rounded ${borderColor}`}
+            >
               <div className="form-check">
                 <input
                   className="form-check-input"
@@ -243,24 +263,29 @@ const DegreeRecommendation = () => {
                   id={`alt-${index}`}
                 />
                 <label
-                  className="form-check-label w-100"
+                  className={`form-check-label w-100 ${
+                    theme === "dark" ? "text-light" : ""
+                  }`}
                   htmlFor={`alt-${index}`}
                 >
                   <div className="d-flex justify-content-between">
                     <h5 className="mb-1">{alt.name}</h5>
                     <span className="badge bg-info">{alt.match} Match</span>
                   </div>
-                  <p className="mb-0 text-muted">{alt.description}</p>
+                  <p className={`mb-0 ${textMuted}`}>{alt.description}</p>
                 </label>
               </div>
             </div>
           ))}
         </div>
       </div>
+
       <div className="d-flex justify-content-center mt-4">
         <button
-          className="btn btn-outline-primary"
-          onClick={() => navigate(-1)} // Go back to previous page
+          className={`btn ${
+            theme === "dark" ? "btn-outline-light" : "btn-outline-primary"
+          }`}
+          onClick={() => navigate(-1)}
         >
           Back to Form
         </button>
