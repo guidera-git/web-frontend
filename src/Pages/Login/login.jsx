@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -12,6 +12,22 @@ import {
 
 function Login() {
   const navigate = useNavigate();
+  useEffect(() => {
+    const handleRedirect = () => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        navigate("/", { replace: true }); // Replace ensures login screen is removed from history
+      }
+    };
+
+    // Wait until the page is fully loaded
+    if (document.readyState === "complete") {
+      handleRedirect();
+    } else {
+      window.addEventListener("load", handleRedirect);
+      return () => window.removeEventListener("load", handleRedirect);
+    }
+  }, [navigate]);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

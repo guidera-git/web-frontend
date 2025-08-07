@@ -139,8 +139,8 @@ function Section3() {
 
 function Section4() {
   const { theme } = useContext(ThemeContext);
-
   const navigate = useNavigate();
+
   const services = [
     {
       image: "/home8.png",
@@ -179,14 +179,16 @@ function Section4() {
           {services.map((service, index) => (
             <div key={index} className="col-md-6 p-0">
               <div
-                className="h-100 d-flex flex-column align-items-center text-center p-4"
+                className="h-100 d-flex flex-column align-items-center text-center p-4 service-card"
                 style={{
                   borderRight: index === 0 ? "1px solid" : "none",
                   borderBottom: index === 1 ? "1px solid" : "none",
                   borderTop: index === 2 ? "1px solid" : "none",
                   borderLeft: index === 3 ? "1px solid" : "none",
                   borderColor: theme === "dark" ? "#ffffff" : "#0d6efd",
+                  cursor: "pointer", // Add pointer cursor to indicate clickable
                 }}
+                onClick={() => navigate(service.link)} // Add onClick to the whole div
               >
                 <img
                   src={service.image}
@@ -197,20 +199,14 @@ function Section4() {
                 />
                 <h4>{service.title}</h4>
                 <p>{service.description}</p>
-                <button
-                  className="btn btn-transparent d-flex align-items-center justify-content-center gap-3 border-0 w-100"
-                  style={{
-                    color: theme === "dark" ? "#ffffff" : "#0d6efd",
-                  }}
-                  onClick={() => navigate(service.link)}
-                >
+                <div className="d-flex align-items-center justify-content-center gap-3 w-100">
                   <FaArrowRight
                     style={{
                       fontSize: "1.5rem",
                       color: theme === "dark" ? "#ffffff" : "#0d6efd",
                     }}
                   />
-                </button>
+                </div>
               </div>
             </div>
           ))}
