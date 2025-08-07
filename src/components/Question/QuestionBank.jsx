@@ -196,7 +196,6 @@ function QuestionBank() {
         }`}
       >
         {subject.charAt(0).toUpperCase() + subject.slice(1)} Quiz
-        {state.expectedCount ? <small>({state.questions.length})</small> : null}
       </h2>
 
       {state.error && (
